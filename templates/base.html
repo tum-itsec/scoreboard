@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+	<head>
+		<title>{{board_title}}</title>
+		<link rel="stylesheet" type="text/css" href="/static/style.css" />
+		<link rel="stylesheet" type="text/css" href="/static/code.css" />
+		<link rel="stylesheet" type="text/css" href="/static/css/all.min.css" />
+		<script src="/static/js.js"></script>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		{% block addheader %}{% endblock %}
+	</head>
+	<body>
+
+		<div style="color: #3070b3; text-align:right">
+			signed in as {{session["user-displayname"]}} ({{session["user-matrikel"]}})
+		</div>
+		<div>
+		<img style="margin: 15px 0px; width: 80px;float:right" src="/static/tum.svg">
+		</div>
+		<h1>{{board_title}}</h1>
+
+		<div id="navtoggle"><button>Menu</button></div>
+
+		<nav>
+			<div>
+			<a href="/scoreboard">Scoreboard</a>
+			<a href="/tasks">Tasks</a>
+			<a href="/materialien">Course Materials</a>
+			<a href="/booking">Book Presentation</a>
+			<a href="/team">Team</a>
+			<a href="/sshkeys">SSH Keys</a>
+			<a href="/logout">Logout</a>
+			</div>
+		{% if is_tutor() %}
+		<p><b>Tutor-Stuff</b></p>
+		<div>
+			<!--<a href="/grade-upload">Task Grading</a>-->
+			<a href="/timesheet">Timesheet</a>
+			<a href="/comments">Student Comments</a>
+			<a href="/flagcheck">Flag Checker</a>
+			<a href="/presentations">Presentations</a>
+			<a href="/booking/tutor-overview">Presentation Booking</a>
+			<a href="/tutorials">Attendance Tracking</a>
+			<a href="/teaminfo">Teams</a>
+			<a href="/taskadmin">Tasks</a>
+			<a href="/autograde/queue">Autograde Queue</a>
+			<a href="/eastereggs">Easter Eggs</a>
+			{% for m in plugmenu['tutor'] %}
+			<a href="{{m['url']}}">{{m['title']}}</a>
+			{% endfor %}
+			<a href="/set-role/0">Drop rights to student</a>
+		</div>
+		{% endif %}
+		{% if is_admin() %}
+		<p><b>Admin-Stuff</b></p>
+		<div>
+			<a href="/users">Users</a>
+			<a href="/timesheet/admin">Timesheet Overview</a>
+			{% for m in plugmenu['admin'] %}
+			<a href="{{m['url']}}">{{m['title']}}</a>
+			{% endfor %}
+			<a href="/set-role/2">Drop rights to tutor</a>
+		</div>
+		{% endif %}
+		</nav>
+
+
+		<main>
+			{% with messages = get_flashed_messages(with_categories=true) %}
+			{% if messages %}
+				{% for c,m in messages %}
+				<div class="alert-{{c}}">{{m}}</div>
+				{% endfor %}
+			{% endif%}
+			{% endwith %}
+		{% block content %}{% endblock %}
+		</main>
+	</body>
+</html>

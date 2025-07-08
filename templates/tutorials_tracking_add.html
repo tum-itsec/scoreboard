@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if edit %}
+<h3>Edit attendance tracking</h3><br>
+{% else %}
+<h3>Add a new attendance:</h3><br>
+{% endif %}
+<form {%if not edit %}action="/tutorials/add"{% endif %} method="post" id="add-tracking" autocomplete="off">
+	{%if not edit %}
+	Tutorium:<br>
+	<select name="tutorium_id">
+		{% for t in tutorials %}
+		<option value="{{t["tutorium_id"]}}">{{t["description"]}}</option>
+		{% endfor %}
+	</select>
+	<br><br>
+	Attendance:<br><input type="number" name="attendance">
+	<br><br>
+	Date:<br><input type="date" name="date">
+	<br><br>
+	Comments:<br>
+	<textarea name="comments" style="width:100%; max-width: 500px; height:350px"></textarea>
+	<br><br>
+	<input type="submit" class="tum-btn" value="Add tracking">
+	{% else %}
+	<input name="key" type="hidden" value="{{data["tracking_id"]}}">
+	Current Tutorium: {{data["description"]}}<br>
+	New Tutorium:<br>
+	<select name="tutorium_id">
+		{% for t in tutorials %}
+		{% if t["tutorium_id"] == data["tutorium_id"] %}
+		<option value="{{t["tutorium_id"]}}" selected>{{t["description"]}}</option>
+		{% else %}
+		<option value="{{t["tutorium_id"]}}">{{t["description"]}}</option>
+		{% endif %}
+		{% endfor %}
+	</select>
+	<br><br>
+	Attendance:<br><input type="number" name="attendance" value={{data["attendance"]}}>
+	<br><br>
+	Current Date: {{data["tutorial_date"]}}<br>
+	New Date:<br><input type="date" name="tutorial_date" value={{data["prevDate"]}}><br><br>
+	Comments:<br>
+	<textarea name="comments" style="width:95%;max-width:500px;height:350px">{% if not data["comments"] == None %}{{data["comments"]}}{% endif %}</textarea>
+	<br><br>
+	<input type="submit" class="tum-btn" value="Edit tracking">
+	{% endif %}
+</form>
+
+{% if students is defined %}
+<br><br><br>
+<h3>Students:</h3>
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>First name</th>
+			<th>Last name</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for s in students %}
+		<tr>
+			<td>{{s["vorname"]}}</td>
+			<td>{{s["nachname"]}}</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+{% endif %}
+
+{% if edit %}
+<br><br><br>
+<form method="post" action="/tutorials/delete/{{data["tracking_id"]}}">
+	<input type="submit" class="tum-btn" value="Delete tracking">
+</form>
+{% endif %}
+{% endblock %}

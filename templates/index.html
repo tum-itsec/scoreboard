@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+<div class="header">
+	<!--<div class="menu">
+		Scoreboard IT-Sicherheit
+	</div>-->
+	<div style="margin:10px">
+	<h1>Scoreboard IT-Sicherheit</h1>
+	<img style="width: 100px;float:right" src="static/tum.svg">
+	</div>
+</div>
+<div class="login" sytle="flex-direction:column">
+<div style="text-align:left; margin: 20px 0px;">
+	<h2>Login</h2>
+Willkommen beim Scoreboard für die Vorlesung IT-Sicherheit im Wintersemester 2020/2021!<br>
+Auf dieser Seite kannst du deine erspielten Flaggen aus dem Übungsbetrieb abgeben und dir deine Bewertungen anschauen. Das einloggen ist mittels deiner LRZ-Kennung möglich.
+</div>
+
+<a href="/login" class="tum-btn">Mit TUM-ID einloggen</a>
+</div>
+</div>
+{% endblock %}

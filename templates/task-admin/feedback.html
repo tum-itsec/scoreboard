@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Task Feedback</h2>
+
+<div class="comments">
+{% for r in ratings %}
+<div class="comment">
+	<span class="author">{{r.author}} ({{r.team}})</span>
+	<span class="rating">{% for _ in range(r.rating|int) %}<i class="fas fa-star"></i>{% endfor %}{% for _ in range(5 - (r.rating|int)) %}<i class="far fa-star"></i>{%endfor%}</span>
+	<span class="message">{{r.text}}</span>
+</div>
+{%endfor%}
+</div>
+{% endblock %}

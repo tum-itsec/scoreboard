@@ -1,0 +1,3 @@
+BEGIN EXCLUSIVE;
+	ALTER TABLE tasks ADD COLUMN file_extensions TEXT NOT NULL DEFAULT ".py,.txt,.zip";
+COMMIT;

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block addheader %}
+{% endblock %}
+{% block content %}
+<h2>Taskverwaltung</h2>
+
+{% if edit %}
+<h3>Task bearbeiten</h3>
+{% else %}
+<h3>Task erstellen</h3>
+{% endif %}
+<form {%if not edit %}action="/taskadmin/create"{% endif %} method="post" enctype="multipart/form-data">
+	<input type="text" name="task_short" value="{{data["task_short"]}}" placeholder="Task Kürzel"><br>
+	<input type="text" name="task_long" value="{{data["task_long"]}}" placeholder="Taskname"><br>
+	<input type="datetime-local" name="start" value="{{data["from_date"]}}" placeholder="Startdatum"> &ndash; <input type="datetime-local" name="end" value="{{data["due_date"]}}" placeholder="Enddatum"><br>
+	<input type="text" name="url" value="{{data["url"]}}" placeholder="URL"><br>
+	<input type="text" name="max_points" value="{{data["max_points"]}}" placeholder="Max Punkte"><br>
+	<input type="text" name="order_num" value="{{data["order_num"]}}" placeholder="Sort-Index"> <span style="color:gray; font-size: 0.8em">Ganzzahl, bestimmt Reihenfolge im Scoreboard und Abgabenfenster</span><br>
+	<input type="checkbox" name="subexp" {%if data["needed"]%}checked{% endif %}><label for="subexp">Lösung hochladen erwartet?</label><br>
+	<input type="checkbox" name="autograded" {%if data["autograded"]%}checked{% endif %}><label for="autograded">Autograded?</label><br>
+	<input type="checkbox" name="bonus" {%if data["bonus"]%}checked{% endif %}><label for="bonus">Bonus?</label><br>
+	<input type="checkbox" name="presentable" {%if data["presentable"]%}checked{% endif %}><label for="presentable">Presentable?</label><br>
+	<input type="text" name="file_extensions" value="{{data["file_extensions"]}}" placeholder="Allowed File Extensions"><br>
+	{% if data["download_link"] %}
+	<input type="hidden" name="cached_dl" value="{{data["download_name"]}}">
+	<a href="{{data["download_link"]}}">{{data["download_name"]}}</a>
+	{% endif %}
+	<input type="file" name="fileupload" value="fileupload"><br>
+
+	<div id="markdownedit" style="display: flex; gap: 10px">
+		<textarea style="margin-top: 10px; flex: 1 1" placeholder="Task Description in Markdown" name="markdown" rows="10">{{ data["markdown"] }}</textarea><br>
+		<div style="flex: 1 1"></div>
+	</div>
+	<input class="tum-btn" style="margin-top:10px" type="submit" value="{% if edit %}Änderungen übernehmen{% else %}Task anlegen{% endif %}"><br>
+</form>
+
+<script>
+	const debounce = (context, func, delay) => {
+	  let timeout;
+	  return (...arguments) => {
+		if (timeout) {
+		  clearTimeout(timeout);
+		}
+
+		timeout = setTimeout(() => {
+		  func.apply(context, arguments);
+		}, delay);
+	  };
+	};
+
+	function renderMarkdown() {
+		fetch("/taskadmin/rendermd", { method: "POST", body: md.value }).then((r) => r.text()).then((r) => c.innerHTML = r);
+	}
+
+	let md = document.querySelector("#markdownedit textarea");
+	let c = document.querySelector("#markdownedit div");
+	console.log("test");
+	md.addEventListener("input", debounce(this, (e) => {
+		renderMarkdown();
+	}, 1000));
+	renderMarkdown();
+</script>
+{% endblock %}

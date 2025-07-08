@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Submission {{submission['id']}}</h3>
+<div><b>Team:</b> <a href="/teaminfo/{{submission['team_id']}}">{{submission['team']}}</a></div>
+<div><b>Task:</b> <a href="/tasks/{{submission['task_id']}}">#{{submission['task_short']}} - {{submission['task_long']}}</a></div>
+<div style="margin-bottom: 1em"><b>Uploader:</b> {{submission['name']}}</div>
+
+<b>File Contents:</b>
+<div style="border: 1px solid black; padding: 7px">
+<pre>
+{{file_content}}
+</pre>
+</div>
+
+<div style="margin-top: 0.5em">The submission generated the following output during execution:</div>
+<pre class="black">{{submission["autograde_output"]}}</pre>
+
+{% endblock %}

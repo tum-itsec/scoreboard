@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Task {{task["task_short"]}}: {{task["task_long"]}}</h2>
+
+{{task["markdown_rendered"] | safe}}
+
+<div>
+	{%if task["url"] %}
+	<b>URL:</b> <a href="{{task['url']}}">{{task["url"]}}</a> 
+	{% endif %}
+	{%if task["filename"] %}
+	<h3>Downloads</h3>
+	<a href="/tasks/{{task['task_id']}}/dl">{{task["filename"]}}</a>
+	{% endif %}
+	<h3>Submit solution</h3>
+	{% if task["needed"] %}
+		{% if submission %}
+			You submitted: <a href="/tasks/{{task["task_id"]}}/upload">{{submission["original_name"]}} (uploaded at {{submission["submission_time"]}})</a>
+		{% elif not still_open %}
+			We haven't received a submission from you in time. 
+		{% endif %}
+		{% if still_open %}
+		<p>The following file types are accepted for this task: {{files_allowed}}.</p>
+		<form method="post" action="/tasks/{{task['task_id']}}/upload" enctype="multipart/form-data">
+			<input type="file" name="fileupload">
+			<input type="submit" value="Upload">
+		</form>
+		{% endif %}
+		{% else %}
+		No exploit/write-up necessary
+	{% endif %}
+
+	{% if task["autograded"] %}
+	<h3>Automatic Grading</h3>
+
+	{% if submission and submission["autograde_result"] is not none %}
+		<div style="margin-top: 0.5em">Your exploits outputed the following during execution:</div>
+		<pre class="black">{{submission["autograde_output"]}}</pre>
+	{% else %}
+	You have not submitted anything so far or your submission is still in the execution queue.
+	{% endif %}
+
+	{% endif %}
+
+	{% if grading %}
+	<h3>Correction Notes</h3>
+	You scored <b>{{grading['points']}}</b> of <b>{{task['max_points']}}</b> points on this task.
+
+	<div class="comments">
+	{% if comments %}
+		{% for c in comments %}
+		<div class="comment{% if c['own'] %} own{% elif c['points'] != None %} grade{% endif %}">
+			<span class="author">{% if c['points'] != None %}<b>{{ c['points'] }} points</b> {% endif %}{{ c['author'] }}, {{ c['time'] | datetime }}</span>
+			<span class="message">{{ c['message'] }}</span>
+		</div>
+		{% endfor %}
+	{% endif %}
+	</div>
+	<form class="comment-form" action="/tasks/{{task['task_id']}}/comment" method="post">
+		<textarea name="message" placeholder="Your message to the corrector (this will be visible to every tutor!)"></textarea>
+		<input type="submit" class="tum-btn" value="Leave a message">
+	</form>
+	{% endif %}
+</div>
+{% endblock %}
+	

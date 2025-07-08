@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+	Flagge checken:	
+	<form method="get" action="/flagcheck">
+		<input type="text" placeholder="flag{...} here" name="flag">
+		<input type="submit" value="Check" class="tum-btn">
+	</form>
+{% endblock %}

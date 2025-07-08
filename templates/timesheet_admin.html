@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Timesheet Overview</h3>
+
+<table>
+	<tr>
+		<th>User</th>
+		<th>No. Entries</th>
+		<th>Sum Hours</th>
+		<th></th>
+	</tr>
+	{% for e in entries %}
+	<tr>
+		<td><a href="admin/{{e.id}}">{{e.vorname}} {{e.nachname}}</a></td>
+		<td>{{e.count}}</td>
+		<td><span {% if e.sum > allowed_hours %}style="font-weight: bold; color: red"{% endif %}>{{e.sum}}</span> (of {{allowed_hours}})</td>
+		<td></td>
+	</tr>
+	{% endfor %}
+</table>
+{% endblock %}

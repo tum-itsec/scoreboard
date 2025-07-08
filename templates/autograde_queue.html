@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Autograding Input Queue</h3>
+{% for x in queue %}
+<div style="margin-bottom: 6px; background-color: #e6e6e6; padding: 3px; display: flex; align-items:center">
+	<div style="margin-right: 5px; color:#000; font-size:1.8em; min-width: 100px">#{{loop.index}}</div>
+	<div style="display: inline-block">
+		<div><a href="/teaminfo/show/{{x.id}}">{{x.original_name}}</a> ({{x.submission_time|datetime}})</div>
+		<div><b>Team:</b> <a href="/teaminfo/{{x.team_id}}">{{x.team}}</a></div>
+		<div><b>Task:</b> <a href="/tasks/{{x.task_id}}">#{{x.task_short}} - {{x.task_long}}</a></div>
+		<div><b>Uploader:</b> {{x.name}}</div>
+		<div><b>Submission ID:</b> {{x.id}}</div>
+	</div>
+</div>
+{% endfor %}
+
+<h3>Autograded Output</h3>
+
+Page:
+{% for p in range(1,total_pages) %}
+{% if p == page %}
+<b>{{p}}</b> 
+{% else %}
+<a href="/autograde/queue?page={{p}}">{{p}}</a> 
+{% endif %}
+{% endfor %}
+
+{% for x in done %}
+<div style="margin-bottom: 6px; background-color: #e6e6e6; padding: 3px; display: flex; align-items:center">
+	<div style="margin-right: 5px; color:#000; font-size:1.8em; min-width: 100px">#{{x.id}}</div>
+	<div style="">
+		<div><a href="/teaminfo/show/{{x.id}}">{{x.original_name}}</a> ({{x.submission_time|datetime}})</div>
+		<div><b>Team:</b> <a href="/teaminfo/{{x.team_id}}">{{x.team}}</a></div>
+		<div><b>Task:</b> <a href="/tasks/{{x.task_id}}">#{{x.task_short}} - {{x.task_long}}</a></div>
+		<div><b>Uploader:</b> {{x.name}}</div>
+		<div><b>Result:</b> {{x.autograde_result}}</div>
+	</div>
+</div>
+{% endfor %}
+
+
+{% endblock %}

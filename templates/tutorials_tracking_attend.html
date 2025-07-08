@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if tracking is defined %}
+<h2>Confirm Tutorial attendance</h2>
+
+Please confirm the attendance of the following tutorial:<br>
+
+<h4>{{ tracking.description }} on {{ tracking.tutorial_date }}</h4>
+
+<form method="post" action="/tutorials/attend">
+    <input type="hidden" name="attendance_code" value="{{ attendance_code }}" />
+    <input class="tum-btn" type="submit" value="Confirm!" />
+</form>
+<br>
+(this will be visible to every tutor!)
+{% endif %}
+
+{% if trackings is defined %}
+<h2>Tutorial Attendance tracking</h2>
+
+<form method="post" action="/tutorials/attend">
+    <input type="text" placeholder="Attendance code" name="attendance_code">
+    <input type="submit" value="Submit attendance code" class="tum-btn">
+</form>
+<br>
+You have attended the following tutorials:
+
+<table>
+    <tr>
+        <th>Tutorium</th>
+        <th>Date</th>
+    </tr>
+    {% for t in trackings %}
+    <tr>
+        <td>{{t["description"]}}</td>
+        <td>{{t["tutorial_date"]}}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if edit %}
+<h3>Edit presentation</h3><br>
+{% else %}
+<h3>Add a new presentation:</h3><br>
+{% endif %}
+<form {%if not edit %}action="/presentations/add"{% endif %} method="post" id="add-presentation" autocomplete="off">
+	{%if not edit %}
+	{{subject_description}}:<br>
+	<div class="autocomplete" style="width:300px">
+		<input name="key" type="hidden">
+		<input name="value" type="text">
+	</div><br><br>
+	Task:<br>
+	<select name="task_id">
+		{% for t in tasks %}
+		<option value="{{t["task_id"]}}">{{t["task_short"]}} - {{t["task_long"]}}</option>
+		{% endfor %}
+	</select>
+	<br><br>
+	Tutorium:<br>
+	<select name="tutorium_id">
+		{% for t in tutorials %}
+		<option value="{{t["tutorium_id"]}}">{{t["description"]}}</option>
+		{% endfor %}
+	</select>
+	<br><br>
+	Date:<br><input type="date" name="date">
+	<br><br>
+	<input id="successful" type="checkbox" name="successful" value=1 checked>
+	<label for="successful"> <b>Presentation successful</b></label><br>
+	<br><br>
+	Comments:<br>
+	<textarea name="comments" style="width:100%; max-width: 500px; height:350px"></textarea>
+	<br><br>
+	<input type="submit" class="tum-btn" value="Add presentation">
+	{% else %}
+	<input name="key" type="hidden" value="{{data["presentation_id"]}}">
+	{% if data["teamname"] == None %}
+	<b>Unused Slot</b><br><br>
+	{% else %}
+	{{subject_description}}: <b>{{data["teamname"]}}</b><br><br>
+	{% endif %}
+	Current Task: {{data["task_short"]}} - {{data["task_long"]}}<br>
+	New Task:<br>
+	<select name="task_id">
+		{% for t in tasks %}
+		{% if t["task_id"] == data["task_id"] %}
+		<option value="{{t["task_id"]}}" selected>{{t["task_short"]}} - {{t["task_long"]}}</option>
+		{% else %}
+		<option value="{{t["task_id"]}}">{{t["task_short"]}} - {{t["task_long"]}}</option>
+		{% endif %}
+		{% endfor %}
+	</select>
+	<br><br>
+	Current Tutorium: {{data["description"]}}<br>
+	New Tutorium:<br>
+	<select name="tutorium_id">
+		{% for t in tutorials %}
+		{% if t["tutorium_id"] == data["tutorium_id"] %}
+		<option value="{{t["tutorium_id"]}}" selected>{{t["description"]}}</option>
+		{% else %}
+		<option value="{{t["tutorium_id"]}}">{{t["description"]}}</option>
+		{% endif %}
+		{% endfor %}
+	</select>
+	<br><br>
+	Current Date: {{data["presentation_date"]}}<br>
+	New Date:<br><input type="date" name="presentation_date" value={{data["prevDate"]}}><br><br>
+	
+	{% if data["teamname"] != None %}
+	<input id="successful" type="checkbox" name="successful" value=1 {% if data["successful"] == 1 %} checked {% endif %}>
+  	<label for="successful"> <b>Presentation successful</b></label><br>
+	<br><br>
+	{% endif %}
+	Comments:<br>
+	<textarea name="comments" style="width:95%;max-width:500px;height:350px">{% if not data["comments"] == None %}{{data["comments"]}}{% endif %}</textarea>
+	<br><br>
+	<input type="submit" class="tum-btn" value="Edit presentation">
+	{% endif %}
+</form>
+
+{% if edit %}
+<br><br><br>
+<form method="get" action="/presentations/delete/{{data["presentation_id"]}}">
+	<input type="submit" class="tum-btn" value="Delete presentation">
+</form>
+{% endif %}
+
+<script src="/static/admin.js"></script> 
+<script>
+	var choices = {{teams|tojson}};
+	document.querySelectorAll("#add-presentation div.autocomplete").forEach((elm) => {console.log(elm); autocomplete(elm, choices)});
+</script>
+{% endblock %}

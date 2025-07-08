@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block addheader %}
+<link rel="stylesheet" href="/static/flatpickr.min.css">
+<script src="/static/flatpickr.min.js"></script>
+{% endblock %}
+{% block content %}
+<h2>Manage Tasks</h2>
+
+{% if is_admin() %}
+<a style="margin: 4px" href="/taskadmin/create" class="tum-btn">Add</a>
+<a style="margin: 4px" href="/taskadmin/create-repo" class="tum-btn">Add from Repo</a>
+<a href="/taskadmin/dl" class="tum-btn">Download all submissions</a>
+{% endif %}
+<div style="overflow: auto">
+<table style="margin-top: 20px">
+	<tr>
+		<th>Kürzel</th>
+		<th>Name</th>
+		<th>Start</th>
+		<th>Ende</th>
+		<th>Hochladen erwartet?</th>
+		<th>URL</th>
+		<th>Download</th>
+		<th>Ordnungsnummer</th>
+		<th>Rating</th>
+		<th>Flags</th>
+		<th>Abgaben voll / benotet / erhalten</th>
+		<th>Max. Punkte</th>
+		<th>Aktionen</th>
+	</tr>
+
+
+
+{% for t in tasks %}
+	<tr>
+		<td>{{t["task_short"]}}</td>
+		<td>{{t["task_long"]}}</td>
+		<td>{{t["from_date"]|datetime}}</td>
+		<td>{{t["due_date"]|datetime}}</td>
+		<td>{{t["needed"]}}</td>
+		<td>{{t["url"]}}</td>
+		<td>{% if t["filename"] %}<a href="/tasks/{{t["task_id"]}}/dl">{{t["filename"]}}</a>{% endif %}</td>
+		<td>{{t["order_num"]}}</td>
+		<td>
+			{% if t["avg_rating"] != None %}
+				<a href="/taskadmin/feedback/{{t["task_id"]}}">{{t["avg_rating"]|round(2)}} ({{t["number_of_ratings"]}})</a>
+			{% else %}
+				<i>no ratings</i>
+			{% endif %}
+		</td>
+		<td>{{t["flags_received"]}}</td>
+		<td>{{t["full_points"]}} / {{t["grading_done"]}} / {{t["submissions_received"]}}</td>
+		<td>{{t["max_points"]}}</td>
+		<td>{%if is_admin() %}<form method="post" action="/taskadmin/delete"><input type="hidden" name="tasknum" value="{{t["task_id"]}}"><input type="submit" value="Task löschen" class="tum-btn"></form> <a style="margin: 4px" href="/taskadmin/edit/{{t["task_id"]}}" class="tum-btn">Edit</a> <a style="margin: 4px" href="/taskadmin/key/{{t["task_id"]}}" class="tum-btn">Flag Key</a>{% endif %}</td>
+	</tr>
+{% endfor %}
+</table>
+</div>
+{% endblock %}

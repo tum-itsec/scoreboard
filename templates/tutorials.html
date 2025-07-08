@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div style="margin: 1em 0px"><a href="/tutorials/add" class="tum-btn">Add Tracking</a></div>
+<div style="margin: 1em 0px"><a href="/tutorials/list?filter=tutor" class="tum-btn">My attendance trackings</a></div>
+<br><h3>Tutorial stats</h3>
+<div style="overflow-x: auto">
+<table style="margin-top: 15px; width:100%" class="sortable">
+	<tr>
+		<th>Tutorial</th>
+		<th>Average attendance</th>
+		<th># of tracked days</th>
+		<th>Details</th>
+	</tr>
+	{% for t in tutorial_infos %}
+	<tr>
+		<td>{{t["description"]}}</td>
+		<td>{% if t["average_attendance"] != None %}{{t["average_attendance"]}}{% else %}No tracking added{% endif %}</td>
+		<td>{% if t["average_attendance"] != None %}{{t["nr_of_trackings"]}}{% else %}0{% endif %}</td>
+		<td><a href="/tutorials/list?filter=tutorium&tutorium_id={{t["tutorium_id"]}}" class="tum-btn">Details</a></td>
+	</tr>
+	{% endfor %}
+</table>
+</div>
+<script src="/static/sortable.js"></script>
+{% endblock %}

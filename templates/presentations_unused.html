@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Add unused presentation slot:</h3><br>
+<form action="/presentations/add/unused" method="post">
+	Missed Task:<br>
+	<select name="task_id">
+		{% for t in tasks %}
+		<option value="{{t["task_id"]}}">{{t["task_short"]}} - {{t["task_long"]}}</option>
+		{% endfor %}
+	</select>
+	<br><br>
+	Tutorium:<br>
+	<select name="tutorium_id">
+		{% for t in tutorials %}
+		<option value="{{t["tutorium_id"]}}">{{t["description"]}}</option>
+		{% endfor %}
+	</select>
+	<br><br>
+	Date:<br><input type="date" name="date">
+	<br><br>
+	Comments:<br>
+	<textarea name="comments" style="width:100%; max-width: 500px; height:350px"></textarea>
+	<br><br>
+	<input type="submit" class="tum-btn" value="Add unused slot">
+</form>
+{% endblock %}

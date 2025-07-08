@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div style="margin: 1em 0px"><a href="/tutorials/add" class="tum-btn">Add Tracking</a></div>
+<br><h3>Tutorial trackings ({{tracking_infos|length}} in total)</h3>
+<div style="overflow-x: auto">
+<table style="margin-top: 15px; width:100%" class="sortable">
+	<tr>
+		<th>Tutorium</th>
+		<th>Attendance</th>
+		<th>Date</th>
+		<th>Comments</th>
+		{% if not tutorview %}
+		<th>Tutor</th>
+		{% endif %}
+		<th>Attendance code</th>
+		<th>Edit/Delete</th>
+	</tr>
+	{% for t in tracking_infos %}
+	<tr>
+		<td>{{t["description"]}}</td>
+		<td>{{t["attendance"]}}</td>
+		<td>{{t["tutorial_date"]}}</td>
+		<td>{{t["comments"]}}</td>
+		{% if not tutorview %}
+		<td>{{t["vorname"]}}</td>
+		{% endif %}
+		<td><a href="/tutorials/attend/{{t["attendance_code"]}}">{{t["attendance_code"]}}</a></td>
+		<td>{% if t["tutor_id"] == tutor_id %}<form method="GET" action="/tutorials/edit/{{t["tracking_id"]}}"><input type="submit" class="tum-btn" value="Edit"></form>{% endif %}</td>
+	</tr>
+	{% endfor %}
+</table>
+</div>
+<script src="/static/sortable.js"></script>
+{% endblock %}

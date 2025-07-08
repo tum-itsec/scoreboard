@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Create Task from Repo</h2>
+
+<div style="margin-bottom: 1em"><a href="/taskadmin/pull-repo" class="tum-btn">Pull Repo</a></div>
+
+Select a task for deployment at the scoreboard:
+<ul>
+{% for t in tasks %}
+<li><a href="/taskadmin/create?repo={{t['path']}}">{{t['path']}} ({{t['title']}}; {{t['points']}} Points)</a></li>
+</div>
+{% endfor %}
+</ul>
+{% endblock %}

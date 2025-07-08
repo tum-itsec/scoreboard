@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block content %}
+Please upload your exploit or write-up for the tasks you worked on <b>before the deadline</b>.
+
+<table style="margin-top: 15px; width:100%">
+<tr>
+	<th>#</th>
+	<th>Name</th>
+	<th>Due</th>
+	<th>Your submission</th>
+	<th>Status</th>
+	<th>Score</th>
+</tr>
+{% for t in tasks %}
+<tr>
+	<td>{{t["task_short"]}}</td>
+	<td><a href="/tasks/{{t['task_id']}}">{{t["task_long"]}}</a></td>
+	<td>{{t["due_date"]}}</td>
+	{% if t["needed"] %}
+	<td>
+		{% if t["submission_time"] %}
+		<a href="/tasks/{{t["task_id"]}}">{{t["original_name"]}} ({{t["submission_time"]}})</a>
+		{% else %}
+			Not submitted by you
+		{% endif %}</td>
+	{% else %}
+	<td>No exploit/write-up necessary</td>
+	{% endif %}
+	<td><span title="Last checked: {{t['last_checked'] or "never"}}">{%if t["status"] == True %}<span style="color: #090">Up</span>{% elif t["status"] == None %}<span style="color: #445">??</span>{% else %}<span style="color: red">Down</span>{% endif %}</span></td>
+	<td>
+	{% if t["points"] != None%}
+	{{t["points"]}}
+	{%else%}
+	<i>ungraded</i>
+	{% endif %}
+	 (of {{t["max_points"]}})
+	</td>
+</tr>
+{% if t["presented_on"] != None%}
+<tr>
+	<td colspan="6" align ="right">Presentation {% if t["successful"] == 1 %}<span style="color: #090">successful</span>{% else %}<span style="color: red">failed</span>{% endif %} ({{t["presented_on"]}})</td>
+</tr>
+{% endif %}
+{% endfor %}
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+	<td></td>
+	<td style="text-align:right"><b>Total:</b></td>
+	<td><b>{{pointbonus}} of {{max_points}} points</b></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+	<td></td>
+	<td style="text-align:right"><b>Successful Presentations:</b></td>
+	<td><b>{{presentations}}/{{req_presentations}}</b></td>
+</tr>
+{% if preview %}
+<tr>
+	<td colspan="6"><b>Upcoming tasks (not visible to students)</b></td>
+</tr>
+	{% for t in preview %}
+	<tr>
+		<td>{{t["task_short"]}}</td>
+		<td><a href="/tasks/{{t['task_id']}}">{{t["task_long"]}}</a></td>
+		<td>{{t["due_date"]}}</td>
+		{% if t["needed"] %}
+		<td>Not submitted by you</td>
+		{% else %}
+		<td>No exploit/write-up necessary</td>
+		{% endif %}
+		<td>
+			<span title="Last checked: {{t['last_checked'] or "never"}}">{%if t["status"] == True %}<span style="color: #090">Up</span>{% elif t["status"] == None %}<span style="color: #445">??</span>{% else %}<span style="color: red">Down</span>{% endif %}</span>
+		</td>
+		<td>
+		{% if t["points"] != None%}
+		{{t["points"]}}
+		{% else %}
+		<i>ungraded</i>
+		{% endif %}
+		 (of {{t["max_points"]}})
+		</td>
+	</tr>
+	{% endfor %}
+{% endif %}
+</table>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+	<h4>Step 1) Download Student Submissions</h4>
+	<a href="/taskadmin/dl" class="tum-btn">Download all submissions</a>
+	<h4>Step 2) Export the current state of the grading</h4>
+	Download the grading.csv and change/append your grades for every team.<br>
+	<a href="/grade-upload/dl" class="tum-btn" style="margin-top: 10px">Download Grading CSV</a>
+	<h4>Step 3) Import CSV</h4>
+	Upload your grading.csv file again. In the next step the scoreboard will diff your grading.csv with the grading in the database and will show you the result. You can still abort the process there!<br>
+	<form method="post" action="/grade-upload" enctype="multipart/form-data">
+		<input type="file" name="gradefile">
+		<input type="submit" value="Import & Diff" class="tum-btn">
+	</form>
+{% endblock %}
+

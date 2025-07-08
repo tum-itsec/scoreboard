@@ -1,0 +1,433 @@
+body {
+	font-family: helvetica, sans-serif;
+	color: rgb(51, 51, 51);
+	margin: 15px;
+	box-sizing: border-box;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+img {
+  max-width: 20cm;
+}
+
+.menu {
+	width=100vw;
+	padding: 10px;
+	color: #111;
+	background-color: #ccc;
+}
+
+.container {
+	display: flex; 
+	flex-direction: column; 
+	min-height:100vh;
+	max-width: 1600px;
+	margin: 0px auto;
+}
+
+footer {
+	margin-top: 20px;
+	text-align: center;
+}
+
+footer > a {
+	text-decoration: none;
+	color: grey;
+}
+
+.container > .header {
+	content: "";
+	min-height: 30px;
+	flex-direction: column; 
+	flex-grow: 1;
+	flex-basis: 33%;
+}
+
+.container::after {
+	content: "";
+	flex-direction: column; 
+	flex-grow: 1.5;
+	flex-basis: 33%;
+}
+
+.login {
+	border: 1px solid #bbbbbb;
+	margin: 0 auto;
+	width: 500px;
+	padding: 10px;
+	text-align:center;
+	border-radius:5px;
+	flex-basis: 33%;
+}
+
+.tum-btn {
+	border: none;
+	background-color: rgb(48,112,179);
+	color:white;
+	padding:8px;
+	text-decoration:none !important;
+	font-weight:bold;
+	cursor: pointer;
+	box-sizing: border-box;
+	display: inline-block;
+	font-family: Cantarell, sans-serif;
+}
+
+.login > .tum-btn {
+	display: block;
+	padding:15px;
+}
+
+nav {
+	width: 200px;
+	float: left;
+	margin-left: 20px;
+	margin-right: 20px;
+}
+
+nav > div {
+	background-color: #e6e6e6;
+}
+
+nav a {
+	display: block;
+	text-decoration: none;
+	color: #333;
+	padding: 8px 15px;
+}
+
+nav a:hover {
+	display: block;
+	text-decoration: none;
+	background-color: #f7f7f7;
+	padding: 8px 15px;
+}
+
+html {
+	max-width: 1600px;
+	margin: 0px auto;
+}
+
+main {
+	/*display: flex;
+	flex-direction: row;*/
+	margin: 10px auto;
+	/* This is needed to stop the nav box to overlap with this box */
+	overflow: hidden;
+	min-width: 400px;
+}
+/* Scoreboard table */
+
+#scoreboard {
+	overflow: auto;
+}
+
+#scoreboard thead th {
+	min-width: 30px;
+}
+
+#scoreboard thead th:nth-child(2) {
+	min-width: 250px;
+}
+
+th, td {
+	padding: 4px;
+}
+
+tr:hover {
+	background-color: #f7f7f7;
+}
+
+th {
+	text-align: left;
+	background-color: #ffffff;
+	/*transform-origin: 0 0;
+	transform: rotate(-30deg);
+	border-bottom: 1px solid black;
+	width: 50px;*/
+	/*background-color: #e6e6e6;
+	color: white;*/
+}
+
+table {
+	border-spacing: 0px;
+}
+
+tr:nth-child(odd) {
+}
+
+.teamname {
+	text-align: center;
+	font-weight: bold;
+	font-size: 1.5em;
+}
+
+.alert-success {
+	color: #155724;
+	background-color: #d4edda;
+	border-color: #c3e6cb;
+	border-radius: .25rem;
+	padding: .75rem 1.25rem;
+	margin-bottom: 10px;
+}
+
+.alert-message {
+	color: #856404;
+	background-color: #fff3cd;
+	border-color: #ffeeba;
+	border-radius: .25rem;
+	padding: .75rem 1.25rem;
+	margin-bottom: 10px;
+}
+
+.login-form > input{
+	display:block;
+	margin: 10px auto 0px auto;
+}
+.login-form > input[type="submit"] {
+	float: right;
+}
+
+.autocomplete {
+  /*the container must be positioned relative:*/
+  position: relative;
+  display: inline-block;
+}
+
+input {
+  padding: 8px;
+  border: 1px solid #b3b3b3;
+  font-size: 16px;
+}
+.autocomplete input[type=text] {
+  box-sizing: border-box;
+  width: 100%;
+}
+.autocomplete-items {
+  position: absolute;
+  border: 1px solid #d4d4d4;
+  border-bottom: none;
+  border-top: none;
+  z-index: 99;
+  /*position the autocomplete items to be the same width as the container:*/
+  top: 100%;
+  left: 0;
+  right: 0;
+}
+.autocomplete-items div {
+  padding: 10px;
+  cursor: pointer;
+  background-color: #fff;
+  border-bottom: 1px solid #d4d4d4;
+}
+.autocomplete-items div:hover {
+  /*when hovering an item:*/
+  background-color: #e9e9e9;
+}
+.autocomplete-active {
+  /*when navigating through the items using the arrow keys:*/
+  background-color: DodgerBlue !important;
+  color: #ffffff;
+}
+
+.star-feedback {
+  --feedback-size: 24px;
+  --star: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbDpzcGFjZT0icHJlc2VydmUiIHZpZXdCb3g9IjAgMCAyMCAyMCI+PHBhdGggZmlsbD0iIzAwNTZiZCIgZD0ibTEwIDAgMy4wOSA2LjU4M0wyMCA3LjYzOWwtNSA1LjEyNUwxNi4xOCAyMCAxMCAxNi41ODMgMy44MiAyMCA1IDEyLjc2NCAwIDcuNjM5bDYuOTEtMS4wNTZ6Ii8+PC9zdmc+');
+
+  font-size: 0;
+  display: inline-block;
+  width: calc(5*var(--feedback-size));
+  height: var(--feedback-size);
+  overflow: hidden;
+  position: relative;
+}
+
+.star-feedback .star {
+  position: absolute;
+  left: 0;
+  height: 100%;
+  width: 20%;
+  z-index: 1;
+  background: var(--star);
+  background-size: contain;
+}
+
+.star-feedback input {
+  appearance: none;
+  opacity: 0;
+  display: inline-block;
+  position: relative;
+  height: 100%;
+  width: 20%;
+  margin: 0;
+  padding: 0;
+  z-index: 3;
+}
+
+.star-feedback input:hover + .star ~ .star, .star-feedback input:checked + .star ~ .star {
+  /* Any star after hover/checked will be gray */
+  filter: grayscale(1) brightness(1.5);
+}
+.star-feedback:hover input:checked + .star ~ .star:not(input:hover + .star ~ .star) {
+  /* Any star between checked & hover must be unfiltered */
+  filter: none;
+}
+.star-feedback .star ~ .star {
+  left: 20%;
+}
+.star-feedback .star ~ .star ~ .star {
+  left: 40%;
+}
+.star-feedback .star ~ .star ~ .star ~ .star {
+  left: 60%;
+}
+.star-feedback .star ~ .star ~ .star ~ .star ~ .star {
+  left: 80%;
+}
+
+.feedback-form {
+  padding: 1em;
+  margin: 1em;
+  background-color: #e6e6e6;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  align-items: flex-start;
+}
+.feedback-form > :not(.star-feedback) { margin: 0; width: min(500px, 100%); }
+.feedback-form > textarea { padding: 0; border: none; }
+
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  align-items: flex-start;
+}
+.comment-form > * { margin: 0; width: min(1024px, 97.5%); box-sizing: border-box; }
+
+.comments {
+  width: min(1024px, 97.5%); 
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  margin: 0.5em 0;
+}
+.comment {
+  padding: 0.5em;
+  background-color: #e6e6e6;
+}
+.comment.tutor {
+  background-color: #e6f9ef;
+}
+.comment.own {
+  background-color: #e6eff9;
+}
+.comment.grade {
+  background-color: #ffe6e6;
+}
+.comment .author {
+	display: block;
+  text-align: right;
+  text-transform: uppercase;
+  font-size: x-small;
+}
+.comment .message {
+  line-height: 2em;
+}
+
+.comment-thread-acted-on {
+  color: #aaa;
+}
+.comment-thread-acted-on a {
+  color: #aaf;
+}
+
+.comment .rating {
+  text-align: right;
+  font-size: x-small;
+  margin-top: 4px;
+  display: block;
+}
+
+#navtoggle {
+	display: none;
+}
+
+#navtoggle button {
+	display: block;
+	width: 100%;
+	border: 0;
+	padding: 10px;
+	font-size: 1em;
+	background-color: #e6e6e6;
+}
+
+#navtoggle button:hover {
+	background-color: #f7f7f7;
+}
+
+#navtoggle button:active {
+	background-color: #333;
+	color: #fff;
+}
+
+.sshkey-area {
+	width: 600px;
+	height: 100px;
+}
+
+.task {
+	border: 1px solid black;
+	margin-bottom: 10px;
+	padding: 6px;
+}
+
+.task:hover {
+	background-color: rgba(0, 128, 0, 0.3)
+}
+
+pre.black {
+	display: block;
+	border-radius: 3px;
+	margin-top: 0.5em;
+	padding: 1em;
+	background: black;
+	color: silver;
+}
+
+@media only screen and (max-width: 600px) {
+	nav {
+		width: 100%;
+		margin: 15px 0;
+		box-sizing: border-box;
+		display: none;
+	}
+
+	#navtoggle {
+		display: block;
+	}
+
+	textarea {
+		width: 100%;
+		box-sizing: border-box;
+		height: 200px;
+	}
+}
+
+.sortable th {
+    cursor: pointer;
+}
+
+.codehilite {
+	padding: 12px;
+	overflow: auto;
+	border-radius: 5px;
+}

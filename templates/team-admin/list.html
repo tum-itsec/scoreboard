@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+
+	{% if is_admin() %}
+	<h2>Team Management</h2>
+	{% else %}
+	<h2>Team Viewer</h2>
+	{% endif %}
+
+	{% if is_admin() %}
+	<h3>Create a team</h3>
+	<div>
+		<form id="create-team" method="post" action="/teaminfo/create" autocomplete="off">
+			<div class="autocomplete" style="width:300px">
+				<input name="key" type="hidden">
+				<input name="value" type="text" placeholder="Member 1">
+			</div>
+			<br>
+			<div class="autocomplete" style="width:300px">
+			<input name="key" type="hidden">
+			<input name="value" type="text" placeholder="Member 2">
+			</div>
+			<input class="tum-btn" type="submit" value="Create team">
+		</form>
+	</div>
+	{% endif %}
+	<h3>Listing of all teams</h3>
+	<div style="overflow-x: auto">
+	<table style="width:100%" class="sortable">
+		<tr>
+			<th>#</th>
+			<th>Team</th>
+			<th>Members</th>
+			<th>Points</th>
+			<th>Successful Presentations</th>
+			<th>Last Submission</th>
+			<th>Team formed at</th>
+			<th>Team deleted at</th>
+			<th></th>
+		</tr>
+		{% for t in teams %}
+		<tr>
+			<td>{{t['team_id']}}</td>
+			<td><a href="/teaminfo/{{t['team_id']}}">{{t['teamname']}}</a></td>
+			<td>{{t['members']}}</td>
+			<td>{{t['points']}}</td>
+			<td>{{t['presentations']}}</td>
+			<td>{{t['last_submission']}}</td>
+			<td>{{t['created']}}</td>
+			<td>{{t['deleted']}}</td>
+			<td></td>
+		</tr>
+		{% endfor %}
+
+	</table>
+	</div>
+
+<script src="static/sortable.js"></script>
+{% if is_admin() %}
+<script src="static/admin.js"></script> 
+<script>
+	var choices = {{users|tojson}};
+	document.querySelectorAll("#create-team div.autocomplete").forEach((elm) => {console.log(elm); autocomplete(elm, choices)});
+</script>
+{% endif %}
+
+{% endblock %}

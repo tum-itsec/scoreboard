@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Delete Presentation</h3><br><br>
+Are you sure you want to <b>delete</b> this {% if data["teamname"] != None %}presentation{% else %}<b>unused slot</b>{% endif %}:<br><br>
+
+{% if data["teamname"] != None %}
+{{subject_description}}: {{data["teamname"]}}<br>
+{% else %}
+<b>Unused slot</b><br>
+{% endif %}
+Task: {{data["task_short"]}} - {{data["task_long"]}}<br>
+Tutorium: {{data["description"]}}<br>
+Date: {{data["presentation_date"]}}<br>
+Comments: {{data["comments"]}}<br>
+
+<form method="post">
+	<input type="submit" class="tum-btn" value="Delete Presentation">
+</form>
+{% endblock %}

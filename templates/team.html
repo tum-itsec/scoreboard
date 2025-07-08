@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+	{% if in_team %}
+	<p>Your formed team will be displayed in the scoreboard as:</p>
+	<p id="teamname" class="teamname">{{teamname}} <a style="text-decoration: none; font-size: 0.5em; vertical-align:top; margin-left:10px; color: gray"><i class="far fa-edit"></i></a></p>
+	<form style="display: none; text-align: center" id="change-teamname-form" method="post" action="/team/changename">
+		<input type="text" name="teamname" value="{{teamname}}">
+		<input type="submit" class="tum-btn" value="Change team name!">
+	</form>
+	<p>your teammates are:</p>
+	<ul>
+		{% for m in teammember %}
+		<li class="teammember">{{m}}</li>
+		{% endfor %}
+	</ul>
+	{% else %}
+	<p>In this course you are working in teams of two {%if singleteams %}or of one{% endif %}. You have not teamed up with a partner so far!</p>
+	<p>Create a team now by sending the following code to your desired teammate. The code is valid for {{minutes_valid}} minutes:<p>
+	<p class="teamname">{{join_code}}</p>
+	If you have received a code, enter it here to build a team:
+	<form method="post" action="/team/join">
+		<input name="join_code" type="text">
+		<input value="Create Team" class="tum-btn" type="submit">
+	</form>
+
+	{% if singleteams %}
+	<div style="margin-top:3em">
+		<b>Alternatively,</b> You can also work on your own by creating a one-person team:
+	</div>
+	<form method="post" action="/team/singleteam">
+		<input value="Create One-Person Team" class="tum-btn" type="submit">
+	</form>
+	{% endif %}
+	{% endif %}
+
+	<script>
+		var teamname = document.getElementById("teamname");
+		var form = document.getElementById("change-teamname-form");
+		teamname.querySelector("a").addEventListener("click", (elm) => {
+			form.style.display = "block";
+			teamname.style.display = "none";
+		});
+	</script>
+{% endblock %}

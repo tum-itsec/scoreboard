@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="float:left; margin-right: 100px">
+Neue Benotungen: {{new_records}}<br>
+Geänderte Benotungen: {{changed_records}}<br>
+Bereits vorhanden und ignoriert: {{ignored_records}}<br>
+</div>
+<div style="float: left">
+<form method="post">
+	<input type="hidden" value="{{changeset|safe}}" name="changeset">
+	<input type="submit" value="In DB übernehmen" class="tum-btn">
+</form>
+</div>
+<br style="clear:both">
+
+<h4 style="margin-bottom: 0.0em">Import Vorschau</h4>
+<table>
+<tr>
+	<th>Team</th><th>Task</th><th>Punkte</th><th>Kommentar</th><th>Interner Kommentar</th>
+</tr>
+{% for row in new_grading %}
+{% if row[0] == "m" %}
+<tr>
+	<td>{{row[2][1]}}</td>
+	<td>{{row[2][0]}}</td>
+	<td>{{row[1][4]}} <span style="color: red; text-decoration:line-through">{{row[2][4]}}</span></td>
+	<td>{{row[1][2]}} <span style="color: red; text-decoration:line-through">{{row[2][2]}}</span></td>
+	<td>{{row[1][3]}} <span style="color: red; text-decoration:line-through">{{row[2][3]}}</span></td>
+</tr>
+{% elif row[0] == "n" %}
+<tr>
+	<td>{{row[1][1]}}</td>
+	<td>{{row[1][0]}}</td>
+	<td>{{row[1][4]}}</td>
+	<td>{{row[1][2]}}</td>
+	<td>{{row[1][3]}}</td>
+</tr>
+{% endif %}
+{% endfor %}
+</table>
+{% endblock %}

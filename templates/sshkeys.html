@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+Please upload a SSH public key here (preferably one where you own the respective private key) if you wish to access our infrastructure to test or perform your exploitation tasks.<br><br>
+
+Your active SSH Public Keys:
+{% for k in sshkeys %}
+<div style="display: flex; border: 1px solid lightgray; padding: 10px; border-radius: 5px; margin-bottom: 20px; max-width: 700px">
+	<div style="margin: auto; padding: 20px"><i style="font-size: 1.8em" class="fas fa-key"></i></div>
+	<div style="word-break: break-all"><span style="font-family: monospace">{{k.ssh_key}}</span>{%if k.added_date %}<br><span style="color: gray; font-size: 0.8em">Added on {{k.added_date|datetime}}</span>{%endif%}</div>
+	<div style="margin: auto; padding: 10px;" ><form action="/sshkeys/{{k.key_id}}/delete" method="post"><input type="submit" class="tum-btn" value="Delete"></form></div>
+	
+</div>
+{% endfor %}
+
+<div style="margin: 1em 0px"><a href="/sshkeys/add" class="tum-btn">Add a new SSH-Key</a></div>
+
+{% if key_available %}
+You have submitted at least one valid SSH key. Syncing this key across our infrastructure may take up to one minute. Afterwards, you can access our SSH server using the following command:<br>
+<code class="black">{{cmd}}</code>
+
+{% endif %}
+
+{% endblock %}

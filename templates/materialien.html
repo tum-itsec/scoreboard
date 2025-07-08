@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+
+Course materials:
+<ul>
+{% for f in files %}
+	<li><a href="materialien/{{f}}">{{f}}</a></li>
+{% endfor %}
+</ul>
+
+{% if is_admin() %}
+<h3>Upload new materials</h3>
+<form method="post" enctype="multipart/form-data" action="/materialien"><input type="file" name="fileupload" value="fileupload"><input type="submit" class="tum-btn" value="Upload"></form>
+{% endif %}
+
+{% endblock %}

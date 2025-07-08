@@ -1,0 +1,10 @@
+materialien/*
+submissions/*
+scoreboard.db*
+*.key
+!.gitkeep
+__pycache__/
+tasks/*
+submissions-archive/*
+config.py
+.mypy_cache/*

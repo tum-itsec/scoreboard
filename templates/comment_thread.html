@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Student Comments</h2>
+by team <b title="Team {{ team_id }}">{{ team_name }}</b> on task <b title="Task {{ task_id }}">{{ task_long }}</b>
+
+<div class="comments">
+{% if comments %}
+    {% for c in comments %}
+    <div class="comment{% if c["points"] != None %} grade{% elif c["own"] %} own{% elif c["by_tutor"] %} tutor{% endif %}">
+        <span class="author">{% if c["points"] != None %}<b>{{ c["points"] }} points</b> {% endif %}{{ c["author"] }}, {{ c["time"] | datetime }}</span>
+        <span class="message">{{ c["message"] }}</span>
+    </div>
+    {% endfor %}
+{% endif %}
+</div>
+<form class="comment-form" action="/comments/{{ team_id }}/{{ task_id }}" method="post">
+    <textarea name="message" placeholder="Your message to the students (this will be visible to students immediately!)"></textarea>
+    <input type="submit" class="tum-btn" value="Leave a message">
+</form>
+{% endblock %}

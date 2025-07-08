@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div style="margin: 1em 0px"><a href="/presentations/add" class="tum-btn">Add presentation</a></div>
+<div style="margin: 1em 0px"><a href="/presentations/add/unused" class="tum-btn">Add unused slot</a></div>
+<div style="margin: 1em 0px"><a href="/presentations/stats" class="tum-btn">Statistics</a></div>
+<div style="margin: 1em 0px" align="right">Switch View: {% if not unused_mode %}<a href="/presentations/?mode=unused" class="tum-btn">Show Unused</a>{% else %}<a href="/presentations/" class="tum-btn">Show Presentations</a>{% endif %}</div>
+<br><h3>Presentations ({{presentations|length}} in total)</h3>
+<div style="overflow-x: auto">
+<table style="margin-top: 15px; width:100%" class="sortable">
+	<tr>
+		{% if not unused_mode %}
+		<th>{%if config['PRESENTATIONS_PER_USER']%}Student{%else%}Team{%endif%}</th>
+		<th>Task #</th>
+		<th>Task</th>
+		{% else %}
+		<th>Missed Task</th>
+		{% endif %}
+		<th>Tutorium</th>
+		<th>Date</th>
+		<th>Tutor</th>
+		{% if not unused_mode %}
+		<th>Successful</th>
+		{% endif %}
+		<th>Comments</th>
+		<th>Edit/Delete</th>
+	</tr>
+	{% for p in presentations %}
+	<tr>
+		{% if not unused_mode %}
+		<td>{{p["subject_name"]}}</td>
+		<td>{{p["task_short"]}}</td>
+		{% endif %}
+		<td>{{p["task_long"]}}</td>
+		<td>{{p["description"]}}</td>
+		<td>{{p["presentation_date"]}}</td>
+		<td>{{p["tutor_name"]}}</td>
+		{% if not unused_mode %}
+		<td>{% if p["successful"] == 1 %}&#10004;{% else %}&#10008;{% endif %}</td>
+		{% endif %}
+		<td>{{p["comments"]}}</td>
+		<td>{% if p["tutor_id"] == tutor_id %}<form method="GET" action="/presentations/edit/{{p["presentation_id"]}}"><input type="submit" class="tum-btn" value="Edit"></form>{% endif %}</td>
+	</tr>
+	{% endfor %}
+</table>
+</div>
+<script src="/static/sortable.js"></script>
+{% endblock %}

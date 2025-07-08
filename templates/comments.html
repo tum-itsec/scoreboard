@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Student Comments</h2>
+<table style="margin-top: 15px; width:100%">
+  <thead>
+    <tr>
+      <th>Team</th>
+      <th>Task</th>
+      <th>Last comment</th>
+      <th>Author</th>
+      <th>Time</th>
+    </tr>
+  </thead>
+  <tbody>
+{% for thread in threads %}
+    <tr {% if thread["acted_on"] %}class="comment-thread-acted-on"{% endif %}>
+      <td title="Team {{thread["team_id"]}}">{{thread["team_name"]}}</td>
+      <td title="Task {{thread["task_id"]}}">{{thread["task_long"]}}</td>
+      <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><a href="/comments/{{thread["team_id"]}}/{{thread["task_id"]}}">{{thread["last_comment"]}}</a></td>
+      <td>{{thread["last_author"]}}</td>
+      <td>{{thread["last_time"] | datetime}}</td>
+    </tr>
+{% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+  

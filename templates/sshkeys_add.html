@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+Add a new SSH-Key to your account:
+
+<form action="/sshkeys/add" method="post" style="margin-bottom: 1em">
+	<textarea class="sshkey-area" name="sshkeys"></textarea>
+	<br>
+	<input type="submit" class="tum-btn" value="Add SSH-Key">
+</form>
+{% endblock %}

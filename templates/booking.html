@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+	{% if approved_presentations %}
+	<h3>Approved Presentations</h3>
+	<table>
+		<tr>
+			<th>Task</th>
+			<th>Tutorium</th>
+			<th></th>
+		</tr>
+		{% for s in approved_presentations %}
+		<tr>
+			<td>{{s.task_long}}</td>
+			<td>{{s.description}}</td>
+			<td></td>
+		</tr>
+		{% endfor %}
+	</table>
+	<div style="margin-top: 0.5em">Please contact the tutor if you need to cancel your approved presentation appointment!</div>
+	{% endif %}
+
+	{% if not approved_presentations or slots|length > 0 %}
+		<h3>Reserve a Presentation slot</h3>
+	<table>
+		<tr>
+			<th>Task</th>
+			<th>Tutorium</th>
+			<th>Applications</th>
+			<th></th>
+		</tr>
+		{% for s in slots %}
+		<tr>
+			<td>{{s.task_long}}</td>
+			<td title="You have visited this tutorial {{s.attendance}} times">
+				{% if s.attendance > 0 %}
+				<b>{{s.description}}</b>
+				{% else %}
+				{{s.description}}
+				{% endif %}
+			</td>
+			<td>{{s.applications}}</td>
+			<td>
+				{% if not s['req_id'] %}
+				<form method="post" action="./book" style="display:inline">
+					<input type="hidden" name="slot" value="{{s.tutorium_id}}">
+					<input type="hidden" name="task" value="{{s.task_id}}">
+					<input class="tum-btn" type="submit" value="Apply">
+				</form>
+				{%elif s.confirmed %}
+				<div class="tum-btn" style="background-color:green">Approved</div>
+				{% else %}
+				<form method="post" action="./cancelbook" style="display:inline">
+					<input type="hidden" name="req_id" value="{{s['req_id']}}">
+					<input class="tum-btn" style="background-color: #990000" type="submit" value="Withdraw Application">
+				</form>
+				{% endif %}
+			</td>
+		</tr>
+		{% endfor %}
+	{% endif %}
+	</table>
+{% endblock %}

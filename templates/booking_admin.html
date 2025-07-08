@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+<div>
+	Plan for another tutorial:
+	<form method="get" style="display: inline-block; margin-bottom: 1em">
+	<select name="tutorium_id">
+		{% for t in tutorials %}
+		<option value="{{t["tutorium_id"]}}" {%if t["tutorium_id"] == selected_tutorial %}selected{%endif%}>{{t["description"]}}</option>
+		{% endfor %}
+		<input type="submit" style="margin-left: 5px" class="tum-btn" value="Change">
+	</select>
+	</form>
+</div>
+{% for tut_id, slots in slots | groupby('tutorium_id') %}
+<div style="margin-bottom: 1em; overflow:auto">
+	<div style="margin-bottom: 0.5em; font-weight: bold">{{slots[0].description}}</div>
+
+	<table class="sortable">
+		<tr>
+			<th></th>
+			<th></th>
+			<th></th>
+			<th></th>
+			<th></th>
+			<th colspan="3">Presentations</th>
+			<th></th>
+		</tr>
+		<tr>
+			<th>#</th>
+			<th>Task</th>
+			<th>Booker</th>
+			<th>Task solved?</th>
+			<th>Attendance</th>
+			<th>Plannend</th>
+			<th>Successful</th>
+			<th>Failed</th>
+			<th></th>
+		</tr>
+	{% for s in slots %}
+		<tr>
+			<td>{{s.task_short}}</td>
+			<td>{{s.task_long}}</td>
+			<td>{{s.booker}}</td>
+			<td>{%if s.task_solved %}<a href="/teaminfo/{{s.task_solved}}"><i class="fas fa-check"></a></i>{%endif%}</td>
+			<td>{{s.attendance}}</td>
+			<td>{{s.approved_presentations}}</td>
+			<td>{{s.presentations_success}}</td>
+			<td>{{s.presentations_failed}}</td>
+			<td></td>
+			<td></td>
+			<td>
+				{%if state_tuts[(s.tutorium_id, s.task_id)] == 0 %}
+				<form method="post" action="./approve" style="display:inline">
+					<input type="hidden" name="req_id" value="{{s.req_id}}">
+					<input type="hidden" name="selected_tutorial" value="{{selected_tutorial}}">
+					<input type="hidden" name="approve_status" value="1">
+					<input class="tum-btn" type="submit" value="Approve">
+				</form>
+				{% endif %}
+				{%if s.confirmed %}
+					<div class="tum-btn" style="background-color:green">Approved</div>
+					<form method="post" action="./approve" style="display:inline">
+						<input type="hidden" name="req_id" value="{{s.req_id}}">
+						<input type="hidden" name="selected_tutorial" value="{{selected_tutorial}}">
+						<input type="hidden" name="approve_status" value="0">
+						<input class="tum-btn" style="background-color: #990000" type="submit" value="Cancel Approval">
+					</form>
+				{% else %}
+					<div class="tum-btn" style="visibility: hidden">Approve</div>
+				{% endif %}
+			</td>
+		</tr>
+	{% endfor %}
+	</table>
+</div>
+<script src="/static/sortable.js"></script>
+{% endfor %}
+{% endblock %}
+

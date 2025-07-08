@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Manage Users</h2>
+
+<p><b>Total users registered:</b> {{users|length}}</p>
+
+<div style="overflow: auto">
+<table style="margin-top: 20px" class="sortable">
+	<tr>
+		<th>#</th>
+		<th>First Name</th>
+		<th>Given Name</th>
+		<th>Display Name</th>
+		<th>LRZ-Username</th>
+		<th>Team</th>
+		<th>SSH-Key</th>
+		<th>Last Active</th>
+		<th>Actions</th>
+	</tr>
+
+{% for u in users%}
+	<tr>
+		<td>{{u["id"]}}</td>
+		<td>{{u["vorname"]}}</td>
+		<td>{{u["nachname"]}}</td>
+		<td>{{u["displayname"]}}</td>
+		<td>{{u["uid"]}}</td>
+		<td>{%if u["team"]%}<a href="/teaminfo/{{u.team_id}}">{{u["team"]}}</a>{%endif%}</td>
+		<td>{%if u["ssh_key"]%}<i class="fas fa-check"></i>{%endif%}</td>
+		<td>{{u["last_active"]|datetime}}</td>
+		<td><a style="margin: 4px" href="/impersonate/{{u["id"]}}" class="tum-btn">Impersonate</a></td>
+	</tr>
+{% endfor %}
+</table>
+</div>
+<script src="/static/sortable.js"></script>
+{% endblock %}

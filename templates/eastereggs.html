@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Eastereggs</h2>
+
+{% if is_admin() %}
+<h3>Add an easter egg flag</h3>
+<form style="margin-top: 1em; margin-bottom: 1em; display: flex" method="post" action="./add">
+	<div>
+	Flag:<br>
+	<input style="margin-right: 0.5em" type="text" name="flag">
+	</div>
+	<div>
+	Link:<br>
+	<input style="margin-right: 0.5em; width: 300px" type="text" name="link"><br>
+	</div>
+	<div style="display: flex">
+	<input class="tum-btn" style="align-self: flex-end" type="submit" value="Add Easter Egg Flag">
+	</div>
+</form>
+{% endif %}
+
+<h3>Existing easter eggs</h3>
+<table>
+	<tr>
+		<th>Flag</th>
+		<th>Link</th>
+		<th>Accessed</th>
+		<th>Creator</th>
+		<th><th>
+	</tr>
+
+{% for e in eggs %}
+<tr>
+	<td>{{e['flag']}}</td>
+	<td><a href="{{e['link']}}">{{e['link']}}</a></td>
+	<td>{{e['counter']}}</td>
+	<td>{{e['creator_name']}}</td>
+	<td>{%if is_admin() %}<form action="./delete" method="post"><input type="hidden" name="id" value="{{e['easteregg_id']}}"><input type="submit" class="tum-btn" value="Delete"></form>{% endif %}</td>
+</tr>
+{% endfor %}
+</table>
+{% endblock %}
+

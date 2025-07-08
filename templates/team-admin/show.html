@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{teamname}} {% if isDeleted %} [DELETED] {%endif%}</h2>
+
+<h3>Mitglieder</h3>
+<ul>
+	{% for m in teammember %}
+	<li class="teammember">{{m}}</li>
+	{% endfor %}
+</ul>
+
+<h3>Presentationen</h3>
+<ul>
+	{% for m in teammember %}
+	<li class="teammember">{{m}}</li>
+	{% endfor %}
+</ul>
+
+<h3>Abgaben</h3>
+<table>
+	<tr>
+		<th></th><th>#</th><th>Zeitpunkt</th><th>Uploader</th><th></th>
+	</tr>
+	{% for elm in submissions %}
+	<tr>
+		<td>{%if elm.pfid %}<i class="fas fa-flag"></i>{%endif%}</td>
+		<td>{{elm["task_short"]}}</td>
+		<td>{{elm["submission_time"]|datetime}}</td>
+		<td>{{elm["vorname"]}} {{elm["nachname"]}}</td>
+		<td><a href="/teaminfo/show/{{elm["id"]}}">Show</a> | <a href="/teaminfo/dl/{{elm["id"]}}">Download</a></td>
+	</tr>
+	{% endfor %}
+</table>
+
+<h3>Bewertungen</h3>
+<table>
+	<tr>
+		<th>#</th><th>Punkte</th><th>Kommentar</th><th>Interner Kommentar</th><th>Korrektor</th><th>Ungültig seit</th>
+	</tr>
+	{% for elm in grading %}
+	<tr {% if elm["deleted_time"] %} style="text-decoration: line-through; color:gray" {% endif %}>
+		<td>{{elm["task_short"]}}</td>
+		<td>{{elm["points"]}}</td>
+		<td>{{elm["comment"]}}</td>
+		<td>{{elm["internal_comment"]}}</td>
+		<td>{{elm["corrector"]}}</td>
+		<td>{% if elm["deleted_time"] %} {{elm["deleted_time"]|datetime}}{% endif %}</td>
+	</tr>
+	{% endfor %}
+</table>
+
+{% if is_admin() and not isDeleted %}
+
+<form style="text-align=center" method="POST" action="/teaminfo/{{team_id}}/delete" 
+    onsubmit="return confirm('Willst Du {{teamname}}, mit {%for m in teammember %}{{m}} {% endfor %}wirklich auflösen?');">
+
+    <input class="tum-btn" type="submit" value="Team auflösen"">
+</form>
+
+{% endif %}
+
+{% endblock %}

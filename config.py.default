@@ -1,0 +1,71 @@
+import time
+import datetime
+
+class Config:
+    # Display settings
+    BOARD_TITLE = "Scoreboard - TODO which course?"
+    WELCOME_TEXT = "Welcome to the scoreboard for the lecture <b>TODO</b> in the winter term TODO!"
+    MAINTENANCE = False
+    SHOW_NAMES_TO_ALL = False
+
+    # Security settings
+    SESSION_COOKIE_SAMESITE = "Lax"
+    SECRET_KEY = open("app-secret.key", "rb").read()
+
+    # Database settings
+    DATABASE = "scoreboard.db"
+    USER_ALLOWLIST_TABLE = None # Course registration is restricted to users whose Matrikelnummer is listed in the 'matrikel' column of this table. If None, this check is disabled.
+
+    # Task status reporting
+    TASK_STATUS_APIKEY = None # Configure this to enable automated status updates
+    TASK_STATUS_UP_TIMEOUT = 20 * 60 # Seconds after which a reported "Up" status expires
+
+    # Flag settings
+    FLAG_VALID_START = time.mktime(time.strptime("02 Nov 2020", "%d %b %Y"))
+    FLAG_VALID_END = time.mktime(time.strptime("02 Nov 2020", "%d %b %Y"))
+    FLAG_PREFIX = "flag"
+
+    # Submission settings
+    SUBMISSION_GRACE_PERIOD = 15*60
+
+    # Team creation
+    JOIN_KEY = open("join.key", "rb").read()
+    JOIN_MINUTES_VALID = 60
+    START_TEAMNUMBER = 1 # Team-id that the first team should have
+
+    SINGLETEAMS_ALLOWED = True
+    PRESENTATIONS_PER_USER = True
+
+    # Presentation settings
+    REQ_PRESENTATIONS = 1
+
+    # SSH setup
+    SSHKEY_APIKEY = "0123456789abcdef"
+    SSHKEY_CMD = "ssh {user}@example.invalid"
+
+    # Timesheet tracking.
+    # TIME_FORMAT configures both how times are entered here in the config and how times are displayed to tutors.
+    TIME_FORMAT = "%Y-%m-%d %H:%M"
+    SEMESTER_START = datetime.datetime.strptime("2020-10-14 00:00", TIME_FORMAT)
+    SEMESTER_END = datetime.datetime.strptime("2021-02-09 23:59", TIME_FORMAT)
+    HOURS_PER_WEEK = 7
+
+    # Send emails on exceptions
+    EMAIL_BUGS = False
+    EMAIL_BUGS_TO = ["recipient@example.invalid"]
+    EMAIL_BUGS_FROM = "sender@example.invalid"
+    EMAIL_BUGS_VIA = "mailserver.example.invalid"
+    EMAIL_BUGS_CREDENTIALS = ("username", "password") # or None, if no authentication is required
+    EMAIL_BUGS_SUBJECT = "[scoreboard] Internal Server Error"
+
+    # Attendance tracking: must be a bytestring of length 8
+    ATTENDANCE_KEY = b"01234567"
+
+    # Additional (maybe internal) plugins.
+    # Array of strings; for each plugin entry "PLUGIN" here the module "plugins.PLUGIN" is imported.
+    # So, either of "plugins/PLUGIN.py" or, for more complex plugins, "plugins/PLUGIN/__init.py" has to exist.
+    PLUGINS = []
+
+    # Debugging features
+    BENCHMARK_DB = False
+    DISABLE_ACTIVITY_LOG = False

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+    <form method="post" action="/flag">
+        <input type="text" placeholder="{{config['FLAG_PREFIX']}}{...} here" name="flag">
+        <input type="submit" value="Submit Flag" class="tum-btn">
+    </form>
+    {% if feedback_data != None %}
+    <form class="feedback-form" method="post" action="{{ feedback_data["url"] }}">
+        <b>Rate this task ({{ feedback_data["task_long"] }})</b>
+        <div class="star-feedback">
+            <input type="radio" name="rating" value="1"><i class="star"></i>
+            <input type="radio" name="rating" value="2"><i class="star"></i>
+            <input type="radio" name="rating" value="3"><i class="star"></i>
+            <input type="radio" name="rating" value="4"><i class="star"></i>
+            <input type="radio" name="rating" value="5" checked><i class="star"></i>
+        </div>
+        <textarea name="text" placeholder="Your feedback (optional)"></textarea>
+        <input type="submit" class="tum-btn" value="Submit rating">
+    </form>
+    {% endif %}
+    {#
+    <h2>Aktivitäten</h2>
+    <table>
+        <tr>
+            <th>Zeitpunkt</th>
+            <th>Event</th>
+        </tr>
+        {% for r in events %}
+        <tr>
+            <td>{{r["submission_time"]|datetime}}</td>
+            <td>Team {{r["team_id"]}} hat eine Flagge für Aufgabe {{r["task_id"]}} abgegeben!</td>
+        </tr>
+        {% endfor %}
+    </table>#}
+
+    <h2>Scoreboard</h2>
+    <div id="scoreboard">
+    <table>
+		<thead>
+        <tr>
+            <th>#</th>
+            <th>Team</th>
+        {% for t in tasks %}
+            <th>#{{t['task_short']}}</th>
+        {% endfor %}
+        </tr>
+		</thead>
+{% for r in scoreboard %}
+<tr>
+	<td>{{loop.index}}</td>
+	<td>
+	{% if show_names %}
+	<a href="/teaminfo/{{r[0]}}">{{ teams[r[0]]["teamname"] }}</a>
+		<br><small>{{ teams[r[0]]["member"] }}</small>
+	{% else %}
+		{{ teams[r[0]]["teamname"] }}
+	{% endif %}
+	</td>
+	{% for t in tasks %}
+	{% if r[1][t['task_id']] == 1 %}
+	<td style="font-size: 1.3em; color: red" title="{{r[1][t['task_id']]}}. Abgabe"><i class="fas fa-check"></i></td>
+	{% elif r[1][t['task_id']] != 9999 %}
+	<td style="font-size: 1.3em" title="{{r[1][t['task_id']]}}. Abgabe"><i class="fas fa-check"></i></td>
+	{% else%}
+	<td></td>
+	{% endif %}
+	{% endfor %}
+</tr>
+{% endfor %}
+        <tr>
+    </table>
+    </div>
+{% endblock %}

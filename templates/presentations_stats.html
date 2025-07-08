@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Statistics for presentations</h2>
+<h3>Successful / Failed / Unused / Total: {{counters["succ_pres_count"]}} / {{counters["failed_pres_count"]}} / {{counters["dead_pres_count"]}} / {{counters["total_pres_count"]}}</h3>
+
+<h4>Presentations in Point Intervals (Total Missing presentations: {{nr_missing_pres}}, # Teams that never submitted: {{nr_never_active_teams}})</h4>
+<table>
+	<tr>
+		<th>Presentations</th>
+		<th>Point Range</th>
+		<th>No. Teams</th>
+	</tr>
+{% for x in stats %}
+<tr>
+	<td>{{x.cnt}}</td>
+	<td>{{x.points}}</td>
+	<td><a href="/teaminfo?teams={{x.teams}}">{{x.cnt_no}}</a></td>
+<tr>
+{%endfor%}
+</table>
+
+<h4>Presentations per Tutorial Group and Week</h4>
+	{% for w, x in stats2|groupby("week")	%}
+	<h5><a href="/presentations/?week={{w}}">Week {{w}}</a></h5>
+	<table>
+		<tr>
+			<th>Tutorial Group</th>
+			<th colspan="3">Presentations</th>
+		</tr>
+		<tr>
+			<th></th>
+			<th>&#10004;</th>
+			<th>&#10008;</th>
+			<th>&#8709;</th>
+			<th>Total</th>
+		</tr>
+	{% for e in x %} 
+		<tr>
+			<td><a href="/presentations/?week={{w}}&tutorium_id={{e.tutorium_id}}">{{e.tutorium}}</td>
+			<td>{{e.successful_cnt}}</td>
+			<td>{{e.failed_cnt}}</td>
+			<td>{{e.unused_cnt}}</td>
+			<td>{{e.cnt}}</td>
+		</tr>
+	{% endfor %}
+	</table>
+	{% endfor %}
+
+{% endblock %}
