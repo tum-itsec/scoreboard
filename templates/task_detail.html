@@ -49,7 +49,7 @@
 	<div class="comments">
 	{% if comments %}
 		{% for c in comments %}
-		<div class="comment{% if c['own'] %} own{% elif c['points'] != None %} grade{% endif %}">
+		<div class="comment{% if c['own'] %} own{% elif c['points'] != None %} grade{% endif %}"{% if c['points'] != None %} style="background-color: {% set percentage = (c['points'] / task['max_points']) * 100 %}{% if percentage == 100 %}#ffcccc{% elif percentage == 0 %}#ccffcc{% else %}rgb({{ 204 + (percentage * 0.51)|int }}, {{ 255 - (percentage * 0.55)|int }}, {{ 204 - (percentage * 0.48)|int }}){% endif %};"{% endif %}>
 			<span class="author">{% if c['points'] != None %}<b>{{ c['points'] }} points</b> {% endif %}{{ c['author'] }}, {{ c['time'] | datetime }}</span>
 			<span class="message">{{ c['message'] }}</span>
 		</div>
