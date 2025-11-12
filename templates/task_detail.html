@@ -34,10 +34,10 @@
 	<h3>Automatic Grading</h3>
 
 	{% if submission and submission["autograde_result"] is not none %}
-		<div style="margin-top: 0.5em">Your exploits outputed the following during execution:</div>
+		<div style="margin-top: 0.5em">Your submission has been graded automatically. Your exploits outputed the following during execution:</div>
 		<pre class="black">{{submission["autograde_output"]}}</pre>
 	{% else %}
-	You have not submitted anything so far or your submission is still in the execution queue.
+		<p>Your submission will be graded automatically. You have not submitted anything so far or your submission is still in the execution queue.</p>
 	{% endif %}
 
 	{% endif %}
