@@ -331,7 +331,7 @@ input {
   background-color: #e6eff9;
 }
 .comment.grade {
-  background-color: #ffe6e6;
+  /* background-color: #f1f1f1; */
 }
 .comment .author {
 	display: block;
@@ -355,6 +355,22 @@ input {
   font-size: x-small;
   margin-top: 4px;
   display: block;
+}
+
+.grade.negative {
+  background-color: #ffe6e6;
+}
+
+.grade.partial-success {
+  background-color: #ffffe6;
+}
+
+.grade.positive {
+  background-color: #e6ffe9;
+}
+
+.grade.neutral {
+  background-color: #f1f1f1;
 }
 
 #navtoggle {
