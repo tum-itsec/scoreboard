@@ -10,6 +10,8 @@ class Config:
     CONTACT_INFO = "John Doe (<a href=\"mailto:john.doe@example.org\">john.doe@example.org</a>)"
     MAINTENANCE = False
     SHOW_NAMES_TO_ALL = False
+    # TIME_FORMAT configures both how times are entered here in the config and how times are displayed to tutors.
+    TIME_FORMAT = "%Y-%m-%d %H:%M"
 
     # Security settings
     SESSION_COOKIE_SAMESITE = "Lax"
@@ -25,8 +27,8 @@ class Config:
     TASK_STATUS_UP_TIMEOUT = 20 * 60 # Seconds after which a reported "Up" status expires
 
     # Flag settings
-    FLAG_VALID_START = time.mktime(time.strptime("02 Nov 2020", "%d %b %Y"))
-    FLAG_VALID_END = time.mktime(time.strptime("02 Nov 2020", "%d %b %Y"))
+    FLAG_VALID_START = time.mktime(time.strptime("1990-12-31 00:00", TIME_FORMAT))
+    FLAG_VALID_END = time.mktime(time.strptime("1990-12-31 23:59", TIME_FORMAT))
     FLAG_PREFIX = "flag"
 
     # Submission settings
@@ -38,12 +40,11 @@ class Config:
     JOIN_KEY = open("join.key", "rb").read()
     JOIN_MINUTES_VALID = 60
     START_TEAMNUMBER = 1 # Team-id that the first team should have
-
     SINGLETEAMS_ALLOWED = True
-    PRESENTATIONS_PER_USER = True
 
     # Presentation settings
     REQ_PRESENTATIONS = 1
+    PRESENTATIONS_PER_USER = True
 
     # SSH setup
     SSHKEY_CMD = "ssh {user}@example.invalid"
@@ -61,10 +62,8 @@ class Config:
     SSH_ACCOUNT_NAME_SEPARATOR = "-"
 
     # Timesheet tracking.
-    # TIME_FORMAT configures both how times are entered here in the config and how times are displayed to tutors.
-    TIME_FORMAT = "%Y-%m-%d %H:%M"
-    SEMESTER_START = datetime.datetime.strptime("2020-10-14 00:00", TIME_FORMAT)
-    SEMESTER_END = datetime.datetime.strptime("2021-02-09 23:59", TIME_FORMAT)
+    SEMESTER_START = datetime.datetime.strptime("1990-10-14 00:00", TIME_FORMAT)
+    SEMESTER_END = datetime.datetime.strptime("1990-02-09 23:59", TIME_FORMAT)
     HOURS_PER_WEEK = 7
 
     # Send emails on exceptions
