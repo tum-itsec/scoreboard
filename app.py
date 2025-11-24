@@ -120,7 +120,7 @@ def check_maintenance():
 if not app.config.get("DISABLE_ACTIVITY_LOG"):
     @app.before_request
     def log_activity():
-        if "user-id" in session:
+        if is_logged_in():
             cur = get_db().cursor()
             cur.execute("UPDATE users SET last_active = strftime('%s','now') WHERE id = ?", [session['user-id']])
 
@@ -138,7 +138,7 @@ def maintenance():
 
 @app.route("/")
 def index():
-    if "user-id" in session:
+    if is_logged_in():
         return redirect("/scoreboard")
     return render_template("login.html", welcome_text=app.config["WELCOME_TEXT"])
 
@@ -511,24 +511,18 @@ def login():
 
     # Create user on demand
     cur = get_db().cursor()
-    cur.execute("SELECT * FROM users WHERE permanent_id LIKE ?", (session["user-permanent-id"],))
+    cur.execute("SELECT * FROM users WHERE permanent_id = ?", (session["user-permanent-id"],))
     if not cur.fetchone():
         cur.execute("INSERT INTO users (permanent_id, matrikel, vorname, nachname, uid, gender, role, email, displayname) VALUES (?,?,?,?,?,?,?,?,?)", (session["user-permanent-id"], session["user-matrikel"], session["user-vorname"], session["user-name"], uid, gender, 0, session['user-mail'], session["user-displayname"]))
     else:
         # In rare circumstances the first- and surname are changed in TUMOnline.
         # Maybe also the mail address and display name change, update the database accordingly
-        cur.execute("UPDATE users SET vorname=?, nachname=?, email=?, displayname=? WHERE permanent_id=? LIMIT 1", (session['user-vorname'], session['user-name'], session['user-mail'], session["user-displayname"], session["user-permanent-id"],))
-    cur.execute("SELECT id, role, vorname FROM users WHERE permanent_id LIKE ?", (session["user-permanent-id"],))
+        cur.execute("UPDATE users SET vorname=?, nachname=?, gender=?, email=?, displayname=? WHERE permanent_id=? LIMIT 1", (session['user-vorname'], session['user-name'], gender, session['user-mail'], session["user-displayname"], session["user-permanent-id"],))
 
+    cur.execute("SELECT id, role FROM users WHERE permanent_id = ?", (session["user-permanent-id"],))
     res = cur.fetchone()
     session["user-id"] = res["id"]
     session["user-role"] = res["role"]
-
-    # TODO: Hack. Some students/tutors have names in TUMOnline that they do not want to
-    # display in the scoreboard. 
-    # Use the cached value in the database instead of the Shibboleth values.
-    # We might want to use the DisplayName of Shibboleth instead long term.
-    session["user-vorname"] = res["vorname"]
 
     # Check if the user is on the list of allowed students (for seminars etc.)
     if res["role"] != 1 and app.config["USER_ALLOWLIST_TABLE"] is not None:
@@ -539,6 +533,8 @@ def login():
             session.pop("user-id")
             return render_template("login-denied.html")
 
+    # do this last so that session becomes valid as late as possible, to guard against exceptions during login process
+    session["logged-in-until"] = time.time() + app.config["MAX_SESSION_SECONDS"]
     return redirect_to_post_login_url()
 
 
@@ -560,6 +556,7 @@ def alternative_login():
                 session["user-id"] = res["id"]
                 session["user-role"] = res["role"]
                 session["user-displayname"] = res["displayname"]
+                session["logged-in-until"] = time.time() + app.config["MAX_SESSION_SECONDS"]
                 return redirect_to_post_login_url()
             else:
                 return redirect("/alternative-login")

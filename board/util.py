@@ -164,10 +164,17 @@ def redirect_to_post_login_url():
     else:
         return redirect("/scoreboard")
 
+def is_logged_in():
+    if "user-id" not in session:
+        return False
+    if session.get("permasession", False):
+        return True
+    return session.get("logged-in-until", 0) > time.time()
+
 def login_required(f):
     @wraps(f)
     def login_required_wrapper(*args, **kws):
-        if "user-id" not in session:
+        if not is_logged_in():
             session["post-login-return-url"] = request.path
             return redirect("/")
         else:
@@ -177,7 +184,7 @@ def login_required(f):
 def admin_required(f):
     @wraps(f)
     def admin_required_wrapper(*args, **kws):
-        if "user-id" not in session or not is_admin():
+        if not is_logged_in() or not is_admin():
             session["post-login-return-url"] = request.path
             return redirect("/")
         else:
@@ -187,7 +194,7 @@ def admin_required(f):
 def tutor_required(f):
     @wraps(f)
     def tutor_required_wrapper(*args, **kws):
-        if "user-id" not in session or not is_tutor():
+        if not is_logged_in() or not is_tutor():
             session["post-login-return-url"] = request.path
             return redirect("/")
         else:

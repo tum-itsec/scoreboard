@@ -11,6 +11,7 @@ class Config:
     # Security settings
     SESSION_COOKIE_SAMESITE = "Lax"
     SECRET_KEY = open("app-secret.key", "rb").read()
+    MAX_SESSION_SECONDS = 60 * 60 * 24
 
     # Database settings
     DATABASE = "scoreboard.db"
