@@ -78,15 +78,15 @@ while True:
                 for chunk in c.logs(stream=True):
                     buf += chunk
                     if len(buf) > SIZE_LIMIT:
-                        buf = buf[:SIZE_LIMIT]
-                        buf += b"\n\n[Log truncated]"
+                        buf = b"[Log truncated]\n\n[...]" + buf[SIZE_LIMIT:]
                         break
                 output = buf.decode(errors="replace")
             except requests.exceptions.ConnectionError:
                 logging.info(f"Terminated testing of submission {s['id']}")
                 output = f"Execution took more than {TIMEOUT} secondes, aborting..."
                 c.kill()
-            c.remove()
+            # force=True should not be necessary, but better safe than sorry
+            c.remove(force=True)
 
             # flag = flag_regex.search(output)
             answer = {
