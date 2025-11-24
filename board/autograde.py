@@ -68,7 +68,7 @@ def autograde_list():
         if reset_url:
             verifier_code = compute_verifier(r, r['user_id'])
             reset_url = reset_url.replace("{{CODE}}", verifier_code)
-        submission_data.append({"id": r['id'], "filename": r['original_name'], "reset_url": reset_url})
+        submission_data.append({"id": r['id'], "filename": r['original_name'], "reset_url": reset_url, "task_short": r["t.task_short"]})
     return jsonify(submission_data)
 
 @bp.route("/queue")
