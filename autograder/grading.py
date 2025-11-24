@@ -11,6 +11,7 @@ import sys
 import shutil
 import re
 import zipfile
+import time
 
 MAX_LINES = 100
 SIZE_LIMIT_REPLY = 8 * 1024
@@ -29,6 +30,7 @@ CONTAINER_SERVICE = os.environ.get("AUTOGRADER_CONTAINER_SERVICE", "docker")
 if CONTAINER_SERVICE == "docker":
 	import docker as container_service
 	from docker.types import Mount
+	using_podman = False
 elif CONTAINER_SERVICE == "podman":
 	import podman as container_service
 	class Mount(dict):
@@ -36,6 +38,7 @@ elif CONTAINER_SERVICE == "podman":
 			self['target'] = target
 			self['source'] = source
 			self['type'] = type
+	using_podman = True
 else:
 	raise Exception("AUTOGRADER_CONTAINER_SERVICE has to be one of \"docker\", \"podman\"")
 
@@ -128,14 +131,35 @@ def autograding_iter():
 				detach=True,
 				init=True)
 			try:
-				try:
-					state = c.wait(timeout=TIMEOUT)
-					killed_by_timeout = False
-				except requests.exceptions.ConnectionError:
-					killed_by_timeout = True
-					logging.info(f"Terminated testing of submission {s['id']}")
+				print("waiting for container")
+				if using_podman:
+					# podman's wait doesn't have timeout capability.
+					# So, manual polling it is.
+					start = time.monotonic()
+					while True:
+						c.reload()
+						if c.status != 'running':
+							killed_by_timeout = False
+							break
+						if time.monotonic() - start > TIMEOUT:
+							killed_by_timeout = True
+							break
+						time.sleep(1)
+				else:
+					try:
+						c.wait(timeout=TIMEOUT)
+						killed_by_timeout = False
+					except requests.exceptions.ConnectionError:
+						killed_by_timeout = True
+				print(f"Wait complete; killed_by_timeout={killed_by_timeout}")
+				if killed_by_timeout:
+					logging.info(f"Stopping container")
 					# Timeout of 1 to allow flushing logs. This call will kill the container after timeout elapsed.
-					c.stop(timeout=1)
+					if using_podman:
+						# Podman requires additional ignore=True to not raise an exception if container already exited by itself.
+						c.stop(timeout=1,ignore=True)
+					else:
+						c.stop(timeout=1)
 
 				# read logs
 				print("Reading logs...")
