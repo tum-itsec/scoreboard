@@ -117,6 +117,16 @@ def check_maintenance():
     if app.config["MAINTENANCE"] and request.endpoint != "maintenance" and not request.path.startswith("/static/"):
         return redirect("/maintenance")
 
+@app.before_request
+def anti_csrf():
+    # These are the ones that according to RFC7231 mustn't modify state
+    if request.method in ["GET", "HEAD", "OPTIONS", "TRACE"]:
+        return
+    sec_fetch_site = request.headers.get("Sec-Fetch-Site", None)
+    if sec_fetch_site is None or sec_fetch_site == "same-origin":
+        return
+    abort(403)
+
 if not app.config.get("DISABLE_ACTIVITY_LOG"):
     @app.before_request
     def log_activity():
