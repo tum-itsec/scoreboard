@@ -7,7 +7,7 @@ import io
 try:
 	import qrcode
 except ModuleNotFoundError:
-	pass
+	qrcode = None
 
 bp = Blueprint("tutorials", __name__, url_prefix="/tutorials")
 
