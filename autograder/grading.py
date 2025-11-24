@@ -76,6 +76,7 @@ while True:
 
             mnts = []
             mnts.append(docker.types.Mount("/mnt", sandbox_dir, type="bind"))
+            time_start = time.time()
             c = docker_client.containers.run(IMAGE_NAME, ['/run.sh', filename],
                 name=f"autograding-{IMAGE_NAME}-{s['id']}-{os.getrandom(16).hex()}",
                 labels={f"autograding-{IMAGE_NAME}-autokill": "1"},
@@ -92,14 +93,8 @@ while True:
                 except requests.exceptions.ConnectionError:
                     killed_by_timeout = True
                     logging.info(f"Terminated testing of submission {s['id']}")
-                    try:
-                        c.kill()
-                    except docker.errors.APIError:
-                        # happens if container dies between wait and kill (that does happen in practice!)
-                        # We can just ignore it because of the c.remove() in the finally later.
-                        # However, still remember to actually kill the container so that logs() later on doesn't block indefinitely.
-                        print("race!")
-                        c.kill()
+                    # Timeout of 1 to allow flushing logs. This call will kill the container after timeout elapsed.
+                    c.stop(timeout=1)
 
                 # read logs
                 print("Reading logs...")
@@ -140,7 +135,8 @@ while True:
             # flag = flag_regex.search(output)
             answer = {
                     "output": output,
-                    "force_fail": killed_by_timeout
+                    "force_fail": killed_by_timeout,
+                    "start_time": time_start
             }
             # print(output)
             r = requests.post(f"{HOST}/autograde/{s['id']}?APIKEY={APIKEY}", data=answer)
