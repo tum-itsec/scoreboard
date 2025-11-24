@@ -111,7 +111,7 @@ def grade(submission_id):
     # because Flask / Werkzeug will try to read from app root instead of cwd
     return send_file(open(r["filepath"], "rb"), as_attachment=True, download_name = r['original_name'])
 
-def autograde_output(db_submission, output):
+def autograde_output(db_submission, output, force_fail):
     # Get and decode flags from output
     flags = [check_flag(x) for x in find_flags(output)]
     print("Found flags:", flags)
@@ -119,7 +119,7 @@ def autograde_output(db_submission, output):
     # Is there at least one flag?
     if not len(flags) >= 1:
         return AutogradeStatus.NO_FLAG
-        
+
     # All flags should be valid and match the task of the submission
     if any(f is None or db_submission['task_id'] != f['task_id'] for f in flags):
         return AutogradeStatus.AT_LEAST_ONE_WRONG_FLAG
@@ -127,8 +127,8 @@ def autograde_output(db_submission, output):
     # All flags should be fresh
     if any(f['ftime'] <= db_submission['submission_time']*1e6 for f in flags):
         return AutogradeStatus.FLAG_NOT_FRESH
-    
-    return AutogradeStatus.OKAY
+
+    return AutogradeStatus.AT_LEAST_ONE_WRONG_FLAG if force_fail else AutogradeStatus.OKAY
 
 
 @bp.route("/<int:submission_id>", methods=["POST"])
@@ -136,15 +136,16 @@ def grade_write(submission_id):
     if not request.args.get("APIKEY", "") == current_app.config["AUTOGRADE_APIKEY"]:
         abort(403)
 
-    print(request.form.get("output"))
+    print(f"output {request.form.get('output')}, force_fail {request.form.get('force_fail')}")
     if (output := request.form.get("output")) is not None:
+        force_fail = request.form.get('force_fail', False)
         # Fetch submission
         cur = get_db().cursor()
         cur.execute("SELECT *, t.max_points FROM task_submissions LEFT JOIN tasks t ON t.task_id = task_submissions.task_id WHERE id=?", (submission_id,))
         db_submission = cur.fetchone()
         if not db_submission:
             abort(400) # The submission we want to update does not exist
-        result = autograde_output(db_submission, output)
+        result = autograde_output(db_submission, output, force_fail)
 
         cur.execute("UPDATE task_submissions SET autograde_output=?, autograde_result=? WHERE id=?", (output, result.value, submission_id))
         cur.execute("""UPDATE task_grading SET deleted_time=strftime('%s', 'now') WHERE task_id=? and team_id=? and deleted_time IS NULL""", (db_submission['task_id'], db_submission['team_id'],))
