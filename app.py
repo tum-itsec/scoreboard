@@ -127,7 +127,7 @@ if not app.config.get("DISABLE_ACTIVITY_LOG"):
 @app.after_request
 def set_security_headers(response):
     response.headers["X-Frame-Options"] = "DENY"
-    response.headers["Content-Security-Policy"] = "frame-ancestors 'none';"
+    response.headers["Content-Security-Policy"] = "frame-ancestors 'none'; script-src 'self'; object-src 'none'; form-action 'self';"
     return response
 
 @app.route("/maintenance")
