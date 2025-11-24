@@ -535,7 +535,7 @@ def login():
     session["user-role"] = res["role"]
 
     # Check if the user is on the list of allowed students (for seminars etc.)
-    if res["role"] != 1 and app.config["USER_ALLOWLIST_TABLE"] is not None:
+    if res["role"] not in TUTOR_ROLES and app.config["USER_ALLOWLIST_TABLE"] is not None:
         # Can't parametrize the allowlist table name, so concatenation it is...
         # This comes from the config so it shouldn't be injectable
         cur.execute(f"SELECT * FROM {app.config['USER_ALLOWLIST_TABLE']} WHERE matrikel=?", [session["user-matrikel"]])
