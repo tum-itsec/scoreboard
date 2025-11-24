@@ -98,6 +98,10 @@ def autograding_iter():
 
 	for s in submissions:
 		logging.info(f"Testing submission ID {s['id']} filename {s['filename']}")
+		reset_url = s.get("reset_url", "")
+		if reset_url:
+			r = requests.post(s["reset_url"])
+			logging.info(f"Resetting challenge resulted in status {r.status_code}")
 		time_start = time.time()
 		r = check_status(requests.get(f"{HOST}/autograde/{s['id']}?APIKEY={APIKEY}"))
 
