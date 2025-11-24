@@ -138,7 +138,8 @@ def grade_write(submission_id):
 
     print(f"output {request.form.get('output')}, force_fail {request.form.get('force_fail')}")
     if (output := request.form.get("output")) is not None:
-        force_fail = request.form.get('force_fail', False)
+        # bool("False") == "True"!?
+        force_fail = bool(request.form.get('force_fail', False)) == "True"
         # Fetch submission
         cur = get_db().cursor()
         cur.execute("SELECT *, t.max_points FROM task_submissions LEFT JOIN tasks t ON t.task_id = task_submissions.task_id WHERE id=?", (submission_id,))
