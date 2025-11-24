@@ -11,6 +11,7 @@ import sys
 import shutil
 import docker
 import re
+import zipfile
 
 docker_client = docker.from_env()
 
@@ -44,17 +45,21 @@ while True:
         r = requests.get(f"{HOST}/autograde/{s['id']}?APIKEY={APIKEY}")
 
         filename = os.path.basename(s['filename'])
-        if not filename.endswith(".py"):
+        if not filename.endswith(".py") and not filename.endswith(".zip"):
             logging.info(f"Skipping submission {s['id']}: {filename}")
             continue
 
         sandbox_dir = tempfile.mkdtemp(prefix="sandbox_")
+
+        filename = filename.replace("\x00", "")
+        filename = filename.replace("/", "").replace("\\", "") # Should not be necessary, but better safe than sorry
+
         with open(sandbox_dir + "/" + filename, "wb") as f:
             f.write(r.content)
 
         mnts = []
         mnts.append(docker.types.Mount("/mnt", sandbox_dir, type="bind"))
-        c = docker_client.containers.run("grader", ['/usr/bin/python3', filename], 
+        c = docker_client.containers.run("grader", ['/run.sh', filename],
             user=f"{os.getuid()}:{os.getgid()}",
             working_dir="/mnt",
             mounts=mnts,
@@ -75,13 +80,14 @@ while True:
         except requests.exceptions.ConnectionError:
             logging.info(f"Terminated testing of submission {s['id']}")
             output = f"Execution took more than {TIMEOUT} secondes, aborting..."
-            c.kill() 
+            c.kill()
         c.remove()
 
         # flag = flag_regex.search(output)
         answer = {
                 "output": "\n".join(output.splitlines()[-100:]),
         }
+        # print(output)
         r = requests.post(f"{HOST}/autograde/{s['id']}?APIKEY={APIKEY}", data=answer)
         print(r.text)
 
