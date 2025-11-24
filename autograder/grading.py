@@ -172,7 +172,7 @@ def autograding_iter():
 				# force=True should not be necessary, but better safe than sorry
 				c.remove(force=True)
 
-			upload_answer(s['id'], output, force_fail, time_start)
+			upload_answer(s['id'], output, killed_by_timeout, time_start)
 		finally:
 			print("Cleaning up tmpdir...")
 			shutil.rmtree(sandbox_dir)
