@@ -70,6 +70,18 @@ def main():
 			pass
 		time.sleep(INTERVAL)
 
+def upload_answer(id, output, force_fail, time_start):
+	print("Sending response...")
+	# flag = flag_regex.search(output)
+	answer = {
+			"output": output,
+			"force_fail": force_fail,
+			"start_time": time_start
+	}
+	# print(output)
+	r = check_status(requests.post(f"{HOST}/autograde/{id}?APIKEY={APIKEY}", data=answer))
+	print(f"Grading upload response: {r.text}")
+
 def autograding_iter():
 	logging.info("Asking the scoreboard for more submissions to check")
 	r = check_status(requests.get(f"{HOST}/autograde?APIKEY={APIKEY}"))
@@ -83,11 +95,13 @@ def autograding_iter():
 
 	for s in submissions:
 		logging.info(f"Testing submission ID {s['id']} filename {s['filename']}")
+		time_start = time.time()
 		r = check_status(requests.get(f"{HOST}/autograde/{s['id']}?APIKEY={APIKEY}"))
 
 		filename = os.path.basename(s['filename'])
 		if not filename.endswith(".py") and not filename.endswith(".zip"):
-			logging.info(f"Skipping submission {s['id']}: {filename}")
+			logging.info(f"Skipping submission {s['id']}: {filename} - extension not supported; uploading placeholder response")
+			upload_answer(s['id'], "Submission not autogradable (extension not supported)", True, time_start)
 			continue
 
 		sandbox_dir = tempfile.mkdtemp(prefix="sandbox_")
@@ -104,7 +118,6 @@ def autograding_iter():
 
 			mnts = []
 			mnts.append(Mount("/mnt", mounted_dir, type="bind"))
-			time_start = time.time()
 			c = container_service_client.containers.run(IMAGE_NAME, ['/run.sh', filename],
 				name=f"autograding-{IMAGE_NAME}-{s['id']}-{os.getrandom(16).hex()}",
 				labels={f"autograding-{IMAGE_NAME}-autokill": "1"},
@@ -159,16 +172,7 @@ def autograding_iter():
 				# force=True should not be necessary, but better safe than sorry
 				c.remove(force=True)
 
-			print("Sending response...")
-			# flag = flag_regex.search(output)
-			answer = {
-					"output": output,
-					"force_fail": killed_by_timeout,
-					"start_time": time_start
-			}
-			# print(output)
-			r = check_status(requests.post(f"{HOST}/autograde/{s['id']}?APIKEY={APIKEY}", data=answer))
-			print(f"Grading upload response: {r.text}")
+			upload_answer(s['id'], output, force_fail, time_start)
 		finally:
 			print("Cleaning up tmpdir...")
 			shutil.rmtree(sandbox_dir)
