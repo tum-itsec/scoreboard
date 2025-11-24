@@ -48,6 +48,9 @@ def task_overview():
     return render_taskadmin({})
 
 def insert_or_update_task(task_id=None):
+    if not request.form.get("start", "") or not request.form.get("end", ""):
+        abort(400, "Start and end date/time are required")
+
     params = {k: request.form[k] for k in ["task_short", "task_long", "url"]}
     params["needed"] = ("subexp" in request.form)
     params["autograded"] = ("autograded" in request.form)
@@ -149,11 +152,14 @@ def task_create():
             except json.JSONDecodeError:
                 flash("Invalid META.json!")
                 return redirect("task-admin/")
+        short_title = task_data["short_title"]
         edit = {
-            "task_short": suggestions["short"] or 0,
+            "task_short": short_title,
             "task_long": task_data["title"],
             "max_points": task_data["points"],
             "needed": task_data["exploit_required"],
+            "url": task_data["url"],
+            "autograded": task_data["autograded"],
             "order_num": suggestions["order_num"] or 0,
         }
         try:
@@ -163,14 +169,15 @@ def task_create():
 
         # Build distributable if needed
         if task_data["downloads"]:
-            output_filename = f'tasks/tmp/{metapath.replace("/","-")}.zip'
+            output_filename = f'tasks/tmp/{short_title}.zip'
             with zipfile.ZipFile(output_filename, 'w', compression=zipfile.ZIP_DEFLATED) as out:
                 for subpath in task_data['downloads']:
                     subpath = subpath.lstrip('/')
                     actual_path = git_path / metapath / subpath
+                    archive_path = pathlib.Path(short_title) / subpath
                     if not actual_path.exists():
                         flash(f'Error: Downloadable file {actual_path} does not exist')
-                    out.write(actual_path, arcname=subpath)
+                    out.write(actual_path, arcname=archive_path)
             edit["download_name"] = os.path.basename(output_filename)
             edit["download_link"] = "/taskadmin/dl/tmp/" + edit["download_name"]
         return render_template("task-admin/detail.html", edit=False, data=edit)

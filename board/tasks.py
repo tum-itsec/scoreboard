@@ -192,6 +192,7 @@ def task_download(task_id):
     if r["from_date"] > time.time() and not is_tutor():
         abort(404)
     cur.execute("INSERT INTO tasks_download_log VALUES (?, ?, datetime('now', 'localtime'))", [session["user-id"],task_id])
+    # TODO insert team code. Hard if we don't know if this is .zip or .tar or .tar.gz or .py or...
     return send_from_directory("tasks", path=r["task_short"], as_attachment=True, download_name=r["filename"])
 
 @bp.route("/<int:task_id>/upload", methods=["GET", "POST"])
