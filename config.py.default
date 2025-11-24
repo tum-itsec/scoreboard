@@ -4,7 +4,10 @@ import datetime
 class Config:
     # Display settings
     BOARD_TITLE = "Scoreboard - TODO which course?"
+    # HTML blob; inserted without escaping
     WELCOME_TEXT = "Welcome to the scoreboard for the lecture <b>TODO</b> in the winter term TODO!"
+    # HTML blob; inserted without escaping
+    CONTACT_INFO = "John Doe (<a href=\"mailto:john.doe@example.org\">john.doe@example.org</a>)"
     MAINTENANCE = False
     SHOW_NAMES_TO_ALL = False
 

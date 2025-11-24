@@ -541,7 +541,7 @@ def login():
         cur.execute(f"SELECT * FROM {app.config['USER_ALLOWLIST_TABLE']} WHERE matrikel=?", [session["user-matrikel"]])
         if not cur.fetchone():
             session.pop("user-id")
-            return render_template("login-denied.html")
+            return render_template("login-denied.html", contact_info=app.config["CONTACT_INFO"])
 
     # do this last so that session becomes valid as late as possible, to guard against exceptions during login process
     session["logged-in-until"] = time.time() + app.config["MAX_SESSION_SECONDS"]
