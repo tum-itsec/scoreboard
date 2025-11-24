@@ -7,7 +7,7 @@ from .util import *
 
 # We should think about more special characters in the comment part of the key. The function sshkey_try_load_public of OpenSSH looks
 # like everything is fine if there is at least one whitespace/tab character between the comment and the newline / end-of-file
-SSH_KEY_REGEX = re.compile("ssh-(?:ed25519|rsa) (?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?( [a-zA-Z0-9' .%\$\+&:=!\-@_]*)?")
+SSH_KEY_REGEX = re.compile("ssh-(?:ed25519|rsa) (?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?( [a-zA-Z0-9' .%\\$\\+&:=!\\-@_]*)?")
 
 bp = Blueprint("sshkeys", __name__, url_prefix="/sshkeys")
 
