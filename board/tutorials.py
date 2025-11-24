@@ -2,6 +2,12 @@ from flask import Blueprint, render_template, request, current_app
 from .util import *
 from Crypto.Cipher import DES
 import base64, datetime
+import io
+
+try:
+	import qrcode
+except ModuleNotFoundError:
+	pass
 
 bp = Blueprint("tutorials", __name__, url_prefix="/tutorials")
 
@@ -78,7 +84,8 @@ def tracking_list():
 
         tracking_infos.append(infos)
 
-    return render_template("tutorials_tracking_list.html", tracking_infos=tracking_infos, tutorview=tutorview, tutor_id=session["user-id"])
+    code_base_link = "/tutorials/attendqr/" if qrcode else "/tutorials/attend/"
+    return render_template("tutorials_tracking_list.html", tracking_infos=tracking_infos, tutorview=tutorview, tutor_id=session["user-id"], code_base_link=code_base_link)
 
 def decrypt_attendance_code(attendance_code: str):
     attendance_code = attendance_code.strip()
@@ -164,6 +171,26 @@ def attend(attendance_code: str):
 
         return render_template("tutorials_tracking_attend.html", tracking=tracking, attendance_code=attendance_code)
 
+@bp.route("/attendqr/<attendance_code>", methods = ["GET"])
+@tutor_required
+def attendqr(attendance_code: str):
+	tut = decrypt_attendance_code(attendance_code)
+	return render_template("tutorials_tracking_attendqr.html", attendance_code=attendance_code, tut=tut)
+
+if qrcode:
+	@bp.route("/attendqr/<attendance_code>/qr.png", methods = ["GET"])
+	@tutor_required
+	def attendqr_png(attendance_code: str):
+		# TODO maybe don't rely on correct proxy setup. any more sane way to do this?
+		qr = qrcode.make(f"https://{request.headers.get('X-Forwarded-Host')}/tutorials/attend/{attendance_code}")
+		b = io.BytesIO()
+		qr.save(b)
+		return b.getvalue(), 200, {'Content-Type': 'image/png'}
+else:
+	@bp.route("/attendqr/<attendance_code>/qr.png", methods = ["GET"])
+	@tutor_required
+	def attendqr_png(attendance_code: str):
+		return "qrcode module not installed"
 
 @bp.route("/add", methods = ["POST", "GET"])
 @tutor_required

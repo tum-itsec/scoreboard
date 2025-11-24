@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+.attendance-centered-text {
+	margin-top: 10px;
+	text-align: center;
+	font-size: xxx-large;
+}
+</style>
+
+<div style="display: flex; flex-direction: column; align-items: center; height: 100vh; max-width: 100%; height: auto">
+<b class="attendance-centered-text">{{tut['description']}}</b>
+<b class="attendance-centered-text">{{tut['tutorial_date']}}</b>
+<img style="max-width: 100%; height: auto;" src="/tutorials/attendqr/{{attendance_code}}/qr.png"></img>
+<b class="attendance-centered-text">{{attendance_code}}</b>
+</div>
+
+{% endblock %}
