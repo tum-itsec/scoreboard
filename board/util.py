@@ -218,34 +218,42 @@ def find_flags(text):
         yield m.group(0)
 
 def check_flag(flag):
+    result, _ = check_flag_details(flag)
+    return result
+
+def check_flag_details(flag):
     m = re.match(current_app.config["FLAG_PREFIX"] + FLAG_BODY_REGEX, flag)
-    if m:
-        raw = bytes.fromhex(m.group(1))
-        data, checksum = raw[:-2], raw[-2:]
-        for start in range(0, len(data), 2):
-            checksum = bytes(a ^ b for a, b in zip(checksum, data[start:start + 2]))
-        task_id = struct.unpack(">H", checksum)[0]
-        key = get_flag_key(task_id)
-        if not key:
-            return None
-        key_task_id, cipher_key = struct.unpack(">H32s", key)
-        if key_task_id != task_id:
-            return None # ???
-        ci = AES.new(key=cipher_key, mode=AES.MODE_ECB)
-        dflag = ci.decrypt(data)
-        ftime, stored_task_id, pad = struct.unpack(">QH6s", dflag)
-        if pad != b"\0" * 6 or stored_task_id != task_id:
-            return None
+    if not m:
+        return None, f"Not a flag: doesn't match flag regex"
+    raw = bytes.fromhex(m.group(1))
+    data, checksum = raw[:-2], raw[-2:]
+    for start in range(0, len(data), 2):
+        checksum = bytes(a ^ b for a, b in zip(checksum, data[start:start + 2]))
+    task_id = struct.unpack(">H", checksum)[0]
+    key = get_flag_key(task_id)
+    if not key:
+        return None, f"taskid {task_id}, but no key found (probably flag commpletely broken / task doesn't exist)"
+    key_task_id, cipher_key = struct.unpack(">H32s", key)
+    if key_task_id != task_id:
+        return None, f"taskid {task_id}, but key's taskid doesn't match!? Database is inconsistent!"
+    ci = AES.new(key=cipher_key, mode=AES.MODE_ECB)
+    dflag = ci.decrypt(data)
+    ftime, stored_task_id, pad = struct.unpack(">QH6s", dflag)
+    if pad != b"\0" * 6 or stored_task_id != task_id:
+        return None, f"taskid {task_id}; decryption result nonsensical: ftime {ftime}, stored_taskid {stored_task_id}, pad {pad}"
 
-        cur = get_db().cursor()
-        cur.execute("SELECT task_short FROM tasks WHERE task_id=?", (task_id,))
-        r = cur.fetchone()
-        if not r:
-            return None
+    cur = get_db().cursor()
+    cur.execute("SELECT task_short FROM tasks WHERE task_id=?", (task_id,))
+    r = cur.fetchone()
+    if not r:
+        return None, "taskid {task_id}; key found and decryption sensible, but no task in db!? Database is inconsistent!"
+    task_short = r["task_short"]
 
-        if current_app.config["FLAG_VALID_START"]*1e6 < ftime <= current_app.config["FLAG_VALID_END"]*1e6:
-            return {"task_id": task_id, "task_short": r["task_short"], "ftime": ftime}
-    return None
+    if current_app.config["FLAG_VALID_START"]*1e6 < ftime <= current_app.config["FLAG_VALID_END"]*1e6:
+        return {"task_id": task_id, "task_short": task_short, "ftime": ftime}, "Valid flag according to all metrics"
+    t = time.localtime(ftime / 1e6)
+    tstr = time.strftime('%Y-%m-%d %H:%M:%S', t)
+    return None, f"taskid {task_id} / {task_short}; pad and taskid valid, but ftime nonsensical / out of bounds: {ftime} / {tstr}"
 
 def generate_flag(task_id, time, flag_key):
     key_task_id, cipher_key = struct.unpack(">H32s", flag_key)

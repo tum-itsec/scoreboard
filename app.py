@@ -296,13 +296,13 @@ def flagcheck():
         if m := cur.fetchone():
             flash(f"Easteregg-Flag; Link: {m['link']}")
         else:
-            fdec = check_flag(flag)
+            fdec, fdetails = check_flag_details(flag)
             if fdec is not None:
                 t = time.localtime(fdec['ftime'] // 1e6)
                 tstr = time.strftime('%Y-%m-%d %H:%M:%S', t)
                 flash(f"Valide Flag für Aufgabe {fdec['task_short']}, erstellt am {tstr}", category="success")
             else:
-                flash("Keine valide Flag!")
+                flash(f"Keine valide Flag! Details: {fdetails}")
     return render_template("flagcheck.html")
 
 @app.route("/team/join", methods=["POST"])
