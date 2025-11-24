@@ -51,11 +51,13 @@
 
 {% if is_admin() and not isDeleted %}
 
-<form style="text-align=center" method="POST" action="/teaminfo/{{team_id}}/delete" 
-    onsubmit="return confirm('Willst Du {{teamname}}, mit {%for m in teammember %}{{m}} {% endfor %}wirklich auflösen?');">
+{# yes, this is this safe, even in the presence of evil usernames, because Jinja also escapes ' and " #}
+<form data-msg="Willst Du {{teamname}}, mit {%for m in teammember %}{{m}} {% endfor %}wirklich auflösen?"
+  id="team-delete-form" style="text-align=center" method="POST" action="/teaminfo/{{team_id}}/delete">
 
     <input class="tum-btn" type="submit" value="Team auflösen"">
 </form>
+<script src="/static/team-admin-show.js"></script>
 
 {% endif %}
 
