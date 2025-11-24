@@ -111,11 +111,15 @@ def autograding_iter():
 			upload_answer(s['id'], "Submission not autogradable (extension not supported)", True, time_start)
 			continue
 
+		# tempfile.mkdtemp says: "The directory is [accessible] only by the creating user."
 		sandbox_dir = tempfile.mkdtemp(prefix="sandbox_")
 		try:
 			# Podman bind mounts apparently don't work for 0700 folders directly
 			mounted_dir = os.path.join(sandbox_dir, "accessible")
 			os.mkdir(mounted_dir)
+			# Is inside sandbox_dir, which is only accessible for current user, so this is fine.
+			# And otherwise podman mount can't write.
+			os.chmod(mounted_dir, 0o0777)
 
 			filename = filename.replace("\x00", "")
 			filename = filename.replace("/", "").replace("\\", "") # Should not be necessary, but better safe than sorry
@@ -170,7 +174,9 @@ def autograding_iter():
 				total_len = 0
 				total_chunks = 0
 				buf = b""
-				for chunk in c.logs(stream=True):
+				# For SOME REASON, using stream=True with follow=True with a stopped container on Podman doesn't show the entire output.
+				# No idea why, but setting follow to False should be fine since the container is stopped now anyway.
+				for chunk in c.logs(stream=True, follow=False):
 					total_chunks += 1
 					total_len += len(chunk)
 					if total_chunks > MAX_CHUNKS or total_len > SIZE_LIMIT_TOTAL:
