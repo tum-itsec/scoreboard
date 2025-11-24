@@ -27,6 +27,8 @@ IMAGE_NAME = os.environ.get("AUTOGRADER_IMAGE", "grader")
 INTERVAL = int(os.environ.get("AUTOGRADER_INTERVAL", 30))
 TIMEOUT = int(os.environ.get("AUTOGRADER_TIMEOUT", 150))
 CONTAINER_SERVICE = os.environ.get("AUTOGRADER_CONTAINER_SERVICE", "docker")
+INSTANCE_ID = os.environ.get("AUTOGRADER_INSTANCE_ID", IMAGE_NAME)
+SANDBOX_DIR_PREFIX = f"autogradingsandbox_{INSTANCE_ID}_"
 if CONTAINER_SERVICE == "docker":
 	import docker as container_service
 	from docker.types import Mount
@@ -62,9 +64,13 @@ def main():
 	print(f"Using {IMAGE_NAME} as image")
 
 	# Cleanup in case previous runs got stuck / crashed
-	for c in container_service_client.containers.list(all=True, filters={"label": f"autograding-{IMAGE_NAME}-autokill"}):
+	for c in container_service_client.containers.list(all=True, filters={"label": f"autograding-{INSTANCE_ID}-autokill"}):
 		print(f"Cleaning up stale container {c.id} / {c.name} from previous run")
 		c.remove(force=True)
+	sandbox_root = tempfile.gettempdir()
+	for n in [n for n in os.listdir(sandbox_root) if n.startswith(SANDBOX_DIR_PREFIX)]:
+		print(f"Cleaning up stale sandbox directory {n}")
+		delete_sandbox_dir(os.path.join(sandbox_root, n))
 
 	while True:
 		try:
@@ -77,13 +83,29 @@ def upload_answer(id, output, force_fail, time_start):
 	print("Sending response...")
 	# flag = flag_regex.search(output)
 	answer = {
-			"output": output,
-			"force_fail": force_fail,
-			"start_time": time_start
+		"output": output,
+		"force_fail": force_fail,
+		"start_time": time_start
 	}
 	# print(output)
 	r = check_status(requests.post(f"{HOST}/autograde/{id}?APIKEY={APIKEY}", data=answer))
 	print(f"Grading upload response: {r.text}")
+
+def delete_sandbox_dir(sandbox_dir):
+	try:
+		shutil.rmtree(sandbox_dir)
+	except PermissionError:
+		# This happens if container creates subdirectories not owned by container's root.
+		mnts = [Mount("/mnt", sandbox_dir, type="bind")]
+		# TODO We're assuming that that image contains rm.
+		container_service_client.containers.run(IMAGE_NAME, ["rm", "-rf", "--"] + [f"/mnt/{n}" for n in os.listdir(sandbox_dir)],
+			name=f"autograding-{IMAGE_NAME}-cleanup",
+			mounts=mnts,
+			labels={f"autograding-{IMAGE_NAME}-autokill": "1"},
+			user="0:0",
+			stdout=False,
+			remove=True)
+		os.rmdir(sandbox_dir)
 
 def autograding_iter():
 	logging.info("Asking the scoreboard for more submissions to check")
@@ -112,7 +134,7 @@ def autograding_iter():
 			continue
 
 		# tempfile.mkdtemp says: "The directory is [accessible] only by the creating user."
-		sandbox_dir = tempfile.mkdtemp(prefix="sandbox_")
+		sandbox_dir = tempfile.mkdtemp(prefix=SANDBOX_DIR_PREFIX)
 		try:
 			# Podman bind mounts apparently don't work for 0700 folders directly
 			mounted_dir = os.path.join(sandbox_dir, "accessible")
@@ -209,7 +231,7 @@ def autograding_iter():
 			upload_answer(s['id'], output, killed_by_timeout, time_start)
 		finally:
 			print("Cleaning up tmpdir...")
-			shutil.rmtree(sandbox_dir)
+			delete_sandbox_dir(sandbox_dir)
 		print(f"done with submission {s['id']}!")
 
 if __name__ == '__main__':
