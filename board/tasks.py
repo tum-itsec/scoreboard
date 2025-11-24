@@ -110,17 +110,7 @@ def task_detail(task_id):
         abort(404)
 
     task = dict(task)
-
-    # Generate verifier code
-    derived_key = hashlib.sha512(b"verify" + task["flag_key"]).digest()[:16]
-    cipher = Blowfish.new(key=derived_key, mode=Blowfish.MODE_ECB)
-    team_id = get_team_from_db()
-    if team_id:
-        verifier_code_plain = struct.pack("<BI", 1, team_id)
-    else:
-        verifier_code_plain = struct.pack("<BI", 2, session['user-id'])
-    verifier_code_plain += b"\x00" * (8 - len(verifier_code_plain))
-    verifier_code = cipher.encrypt(verifier_code_plain).hex()
+    verifier_code = current_user_verifier(task)
 
     if task["url"]:
         task["url"] = task["url"].replace("{{CODE}}", verifier_code)

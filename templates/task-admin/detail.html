@@ -21,6 +21,7 @@
 	<input type="checkbox" name="bonus" {%if data["bonus"]%}checked{% endif %}><label for="bonus">Bonus?</label><br>
 	<input type="checkbox" name="presentable" {%if data["presentable"]%}checked{% endif %}><label for="presentable">Presentable?</label><br>
 	<input type="text" name="file_extensions" value="{{data["file_extensions"]}}" placeholder="Allowed File Extensions"><br>
+	<input type="text" name="reset_url" value="{{data["reset_url"] or ""}}" placeholder="Reset URL"><br>
 	{% if data["download_link"] %}
 	<input type="hidden" name="cached_dl" value="{{data["download_name"]}}">
 	<a href="{{data["download_link"]}}">{{data["download_name"]}}</a>

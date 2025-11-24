@@ -29,7 +29,7 @@ def get_submission_queue():
     #                WHERE sb.submission_time is not null and t.autograded=1 and s.autograde_result IS NULL
     #            )""")
 
-    cur.execute("""SELECT s.id as id, s.original_name as original_name, *,
+    cur.execute("""SELECT s.id as id, s.original_name as original_name, t.flag_key as flag_key, u.id as user_id, *,
                 CASE WHEN tt.teamname IS NULL THEN 'Team ' || tt.team_id ELSE tt.teamname END as team,
                 IIF(u.displayname IS NOT NULL, u.displayname, u.vorname || ' ' || u.nachname) as name
                 FROM task_submissions s
@@ -64,7 +64,11 @@ def autograde_list():
         abort(403)
     submission_data = []
     for r in get_submission_queue():
-        submission_data.append({"id": r['id'], "filename": r['original_name']})
+        reset_url = r['reset_url']
+        if reset_url:
+            verifier_code = compute_verifier(r, r['user_id'])
+            reset_url = reset_url.replace("{{CODE}}", verifier_code)
+        submission_data.append({"id": r['id'], "filename": r['original_name'], "reset_url": reset_url})
     return jsonify(submission_data)
 
 @bp.route("/queue")

@@ -9,6 +9,7 @@ import binascii
 import struct
 import enum
 from Crypto.Cipher import AES
+from Crypto.Cipher import Blowfish
 
 FLAG_BODY_REGEX = r"\{([0-9a-fA-F]{36})\}"
 
@@ -98,8 +99,11 @@ def get_db():
     return db
 
 def get_team_from_db():
+    return user_to_team(session['user-id'])
+
+def user_to_team(user_id):
     cur = get_db().cursor()
-    cur.execute("SELECT * FROM team_members tm LEFT JOIN teams t ON t.team_id = tm.team_id WHERE member_id = ? and t.deleted is null", (session["user-id"],))
+    cur.execute("SELECT * FROM team_members tm LEFT JOIN teams t ON t.team_id = tm.team_id WHERE member_id = ? and t.deleted is null", (user_id,))
     res = cur.fetchone()
     if res:
         return res["team_id"]
@@ -139,7 +143,27 @@ def set_teamidoffset(app):
                     cur.execute("DELETE FROM teams WHERE team_id = ?", [firstTeamnum - 1])
                 elif res["teamname"] != teamname:
                     print(f"Teamname offset can not be accouted for as a team with the ID {firstTeamnum - 1} already exists.")
-                
+
+def current_user_verifier(task):
+    return compute_verifier(task, session['user-id'])
+
+def compute_verifier(task, user_id):
+    team_id = user_to_team(user_id)
+    if team_id:
+        kind = 1
+        id = team_id
+    else:
+        kind = 2
+        id = user_id
+    return compute_verifier_internal(task["flag_key"], kind, id)
+
+def compute_verifier_internal(flag_key, kind, id):
+    derived_key = hashlib.sha512(b"verify" + flag_key).digest()[:16]
+    cipher = Blowfish.new(key=derived_key, mode=Blowfish.MODE_ECB)
+    verifier_code_plain = struct.pack("<BI", kind, id)
+    verifier_code_plain += b"\x00" * (8 - len(verifier_code_plain))
+    verifier_code = cipher.encrypt(verifier_code_plain).hex()
+    return verifier_code
 
 def create_team(team_members):
     cur = get_db().cursor()

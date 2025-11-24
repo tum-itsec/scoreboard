@@ -51,7 +51,7 @@ def insert_or_update_task(task_id=None):
     if not request.form.get("start", "") or not request.form.get("end", ""):
         abort(400, "Start and end date/time are required")
 
-    params = {k: request.form[k] for k in ["task_short", "task_long", "url"]}
+    params = {k: request.form[k] for k in ["task_short", "task_long", "url", "reset_url"]}
     params["needed"] = ("subexp" in request.form)
     params["autograded"] = ("autograded" in request.form)
     params["bonus"] = ("bonus" in request.form)
@@ -170,6 +170,7 @@ def task_create():
         # Build distributable if needed
         if task_data["downloads"]:
             output_filename = f'tasks/tmp/{short_title}.zip'
+            added_children = []
             with zipfile.ZipFile(output_filename, 'w', compression=zipfile.ZIP_DEFLATED) as out:
                 for subpath in task_data['downloads']:
                     subpath = subpath.lstrip('/')
@@ -178,6 +179,14 @@ def task_create():
                     if not actual_path.exists():
                         flash(f'Error: Downloadable file {actual_path} does not exist')
                     out.write(actual_path, arcname=archive_path)
+                    for parent, subdirs, subfiles in actual_path.walk():
+                        for subfile in subdirs + subfiles:
+                            actual_child = parent / subfile
+                            relative = actual_child.relative_to(actual_path)
+                            added_children.append(str(subpath / relative))
+                            out.write(actual_child, arcname=archive_path / relative)
+            if added_children:
+                flash(f"Included children in template files: {added_children}")
             edit["download_name"] = os.path.basename(output_filename)
             edit["download_link"] = "/taskadmin/dl/tmp/" + edit["download_name"]
         return render_template("task-admin/detail.html", edit=False, data=edit)
