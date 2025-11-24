@@ -60,7 +60,7 @@ def get_submission_queue():
 
 @bp.route("/")
 def autograde_list():
-    if not request.args.get("APIKEY") == current_app.config["SSHKEY_APIKEY"]:
+    if not request.args.get("APIKEY", "") == current_app.config["AUTOGRADE_APIKEY"]:
         abort(403)
     submission_data = []
     for r in get_submission_queue():
@@ -99,7 +99,7 @@ def autograde_show_queue():
 
 @bp.route("/<int:submission_id>", methods=["GET"])
 def grade(submission_id):
-    if not request.args.get("APIKEY") == current_app.config["SSHKEY_APIKEY"]:
+    if not request.args.get("APIKEY", "") == current_app.config["AUTOGRADE_APIKEY"]:
         abort(403)
     
     cur = get_db().cursor()
@@ -131,7 +131,7 @@ def autograde_output(db_submission, output):
 
 @bp.route("/<int:submission_id>", methods=["POST"])
 def grade_write(submission_id):
-    if not request.args.get("APIKEY") == current_app.config["SSHKEY_APIKEY"]:
+    if not request.args.get("APIKEY", "") == current_app.config["AUTOGRADE_APIKEY"]:
         abort(403)
 
     print(request.form.get("output"))

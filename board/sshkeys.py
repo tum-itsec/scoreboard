@@ -59,7 +59,7 @@ def delete(key_id):
 
 @bp.route("/getkeys")
 def getkeys():
-    if not (request.args.get("APIKEY") == current_app.config["SSHKEY_APIKEY"] or is_admin()):
+    if not (request.args.get("APIKEY", "") == current_app.config["SSHKEY_APIKEY"] or is_admin()):
         abort(403)
     cur = get_db().cursor()
     cur.execute("SELECT * FROM sshkeys s LEFT JOIN team_members m ON s.user_id = m.member_id LEFT JOIN users u ON s.user_id = u.id")

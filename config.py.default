@@ -28,6 +28,8 @@ class Config:
 
     # Submission settings
     SUBMISSION_GRACE_PERIOD = 15*60
+    # change to static secret string to enable apikey-based access to autograding endpoints
+    AUTOGRADE_APIKEY = None
 
     # Team creation
     JOIN_KEY = open("join.key", "rb").read()
@@ -41,8 +43,9 @@ class Config:
     REQ_PRESENTATIONS = 1
 
     # SSH setup
-    SSHKEY_APIKEY = "0123456789abcdef"
     SSHKEY_CMD = "ssh {user}@example.invalid"
+    # change to static secret string to enable apikey-based access to sshkey syncing endpoints
+    SSHKEY_APIKEY = None
 
     # Timesheet tracking.
     # TIME_FORMAT configures both how times are entered here in the config and how times are displayed to tutors.
@@ -60,6 +63,7 @@ class Config:
     EMAIL_BUGS_SUBJECT = "[scoreboard] Internal Server Error"
 
     # Attendance tracking: must be a bytestring of length 8
+    # TODO replace with secret key
     ATTENDANCE_KEY = b"01234567"
 
     # Additional (maybe internal) plugins.
