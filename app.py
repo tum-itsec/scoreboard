@@ -124,6 +124,12 @@ if not app.config.get("DISABLE_ACTIVITY_LOG"):
             cur = get_db().cursor()
             cur.execute("UPDATE users SET last_active = strftime('%s','now') WHERE id = ?", [session['user-id']])
 
+@app.after_request
+def set_security_headers(response):
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Content-Security-Policy"] = "frame-ancestors 'none';"
+    return response
+
 @app.route("/maintenance")
 def maintenance():
     if not app.config["MAINTENANCE"]:
