@@ -598,6 +598,7 @@ def impersonate(user_id):
     session["user-matrikel"] = res["matrikel"]
     session["user-vorname"] = res["vorname"]
     session["user-name"] = res["nachname"]
+    session["user-displayname"] = res["displayname"]
 
     return redirect("/scoreboard")
 
