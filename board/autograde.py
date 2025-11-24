@@ -107,7 +107,9 @@ def grade(submission_id):
     r = cur.fetchone()
     if not r:
         abort(404)
-    return send_file(r["filepath"], as_attachment=True, download_name = r['original_name'])
+    # We manually open the file instead of passing the path to send_file
+    # because Flask / Werkzeug will try to read from app root instead of cwd
+    return send_file(open(r["filepath"], "rb"), as_attachment=True, download_name = r['original_name'])
 
 def autograde_output(db_submission, output):
     # Get and decode flags from output

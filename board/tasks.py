@@ -229,17 +229,23 @@ def task_upload(task_id):
         f.close()
 
         with open(final_path, "rb") as fu:
-            if ext == "zip" and not b"PK" == fu.read(2):
+            first_two_bytes = fu.read(2)
+            if not first_two_bytes:
+                flash("Leere Datei hochgeladen!")
+                os.remove(final_path)
+                return redirect(f"/tasks/{task_id}")
+            if ext == "zip" and not b"PK" == first_two_bytes:
                 flash("Das ist keine ZIP-Datei!")
                 os.remove(final_path)
                 return redirect(f"/tasks/{task_id}")
 
         # Create a log record inside the database
         cur = get_db().cursor()
-        cur.execute("INSERT INTO task_submissions (task_id, team_id, user_id, submission_time, filepath,original_name) VALUES (?,?,?,strftime('%s','now'),?,?)", (task_id, team_id, session["user-id"], final_path, f.filename))
+        cur.execute("INSERT INTO task_submissions (task_id, team_id, user_id, submission_time, filepath,original_name) VALUES (?,?,?,strftime('%s','now'),?,?)",
+		(task_id, team_id, session["user-id"], final_path, f.filename))
 
         flash("Deine Abgabe wurde erfolgreich entgegengenommen", category="success")
-        return redirect("/tasks")
+        return redirect(f"/tasks/{task_id}")
     else:
         if not team_id:
             abort(404)
@@ -249,7 +255,9 @@ def task_upload(task_id):
         if not res:
             abort(404)
         else:
-            return send_file(res["filepath"], as_attachment=True, download_name=res["original_name"])
+            # We manually open the file instead of passing the path to send_file
+            # because Flask / Werkzeug will try to read from app root instead of cwd
+            return send_file(open(res["filepath"], "rb"), as_attachment=True, download_name=res["original_name"])
 
 @bp.route("/status")
 @admin_required # TODO: Maybe we don't want this to be admin-only?

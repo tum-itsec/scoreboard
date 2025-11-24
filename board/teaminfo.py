@@ -37,7 +37,9 @@ def submission_dl(submission):
     cur = get_db().cursor()
     cur.execute("SELECT * FROM task_submissions s WHERE id= ?", (submission,))
     submission = cur.fetchone()
-    return send_file(submission['filepath'], as_attachment=True, download_name=submission['original_name'])
+    # We manually open the file instead of passing the path to send_file
+    # because Flask / Werkzeug will try to read from app root instead of cwd
+    return send_file(open(submission['filepath'], "rb"), as_attachment=True, download_name=submission['original_name'])
 
 @bp.route("/show/<int:submission>")
 @tutor_required
