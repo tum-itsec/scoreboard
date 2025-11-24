@@ -17,6 +17,7 @@ docker_client = docker.from_env()
 
 HOST = os.environ.get("SCOREBOARD_URL", "https://scoreboard.sec.in.tum.de")
 APIKEY = os.environ.get("SCOREBOARD_APIKEY")
+IMAGE_NAME = os.environ.get("AUTOGRADER_IMAGE", "grader")
 INTERVAL = 30
 TIMEOUT = 150
 
@@ -24,6 +25,7 @@ logging.getLogger().setLevel(logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler())
 
 print(f"Using {HOST} as Scoreboard API")
+print(f"Using {IMAGE_NAME} as Docker image")
 
 while True:
     logging.info("Asking the scoreboard for more submissions to check")
@@ -59,7 +61,7 @@ while True:
 
         mnts = []
         mnts.append(docker.types.Mount("/mnt", sandbox_dir, type="bind"))
-        c = docker_client.containers.run("grader", ['/run.sh', filename],
+        c = docker_client.containers.run(IMAGE_NAME, ['/run.sh', filename],
             user=f"{os.getuid()}:{os.getgid()}",
             working_dir="/mnt",
             mounts=mnts,
