@@ -110,17 +110,7 @@ def task_detail(task_id):
         abort(404)
 
     task = dict(task)
-
-    # Generate verifier code
-    derived_key = hashlib.sha512(b"verify" + task["flag_key"]).digest()[:16]
-    cipher = Blowfish.new(key=derived_key, mode=Blowfish.MODE_ECB)
-    team_id = get_team_from_db()
-    if team_id:
-        verifier_code_plain = struct.pack("<BI", 1, team_id)
-    else:
-        verifier_code_plain = struct.pack("<BI", 2, session['user-id'])
-    verifier_code_plain += b"\x00" * (8 - len(verifier_code_plain))
-    verifier_code = cipher.encrypt(verifier_code_plain).hex()
+    verifier_code = current_user_verifier(task)
 
     if task["url"]:
         task["url"] = task["url"].replace("{{CODE}}", verifier_code)
@@ -195,6 +185,7 @@ def task_download(task_id):
     if r["from_date"] > time.time() and not is_tutor():
         abort(404)
     cur.execute("INSERT INTO tasks_download_log VALUES (?, ?, datetime('now', 'localtime'))", [session["user-id"],task_id])
+    # TODO insert team code. Hard if we don't know if this is .zip or .tar or .tar.gz or .py or...
     return send_from_directory("tasks", path=r["task_short"], as_attachment=True, download_name=r["filename"])
 
 @bp.route("/<int:task_id>/upload", methods=["GET", "POST"])
@@ -232,17 +223,23 @@ def task_upload(task_id):
         f.close()
 
         with open(final_path, "rb") as fu:
-            if ext == "zip" and not b"PK" == fu.read(2):
+            first_two_bytes = fu.read(2)
+            if not first_two_bytes:
+                flash("Leere Datei hochgeladen!")
+                os.remove(final_path)
+                return redirect(f"/tasks/{task_id}")
+            if ext == "zip" and not b"PK" == first_two_bytes:
                 flash("Das ist keine ZIP-Datei!")
                 os.remove(final_path)
                 return redirect(f"/tasks/{task_id}")
 
         # Create a log record inside the database
         cur = get_db().cursor()
-        cur.execute("INSERT INTO task_submissions (task_id, team_id, user_id, submission_time, filepath,original_name) VALUES (?,?,?,strftime('%s','now'),?,?)", (task_id, team_id, session["user-id"], final_path, f.filename))
+        cur.execute("INSERT INTO task_submissions (task_id, team_id, user_id, submission_time, filepath,original_name) VALUES (?,?,?,strftime('%s','now'),?,?)",
+		(task_id, team_id, session["user-id"], final_path, f.filename))
 
         flash("Deine Abgabe wurde erfolgreich entgegengenommen", category="success")
-        return redirect("/tasks")
+        return redirect(f"/tasks/{task_id}")
     else:
         if not team_id:
             abort(404)
@@ -252,7 +249,9 @@ def task_upload(task_id):
         if not res:
             abort(404)
         else:
-            return send_file(res["filepath"], as_attachment=True, download_name=res["original_name"])
+            # We manually open the file instead of passing the path to send_file
+            # because Flask / Werkzeug will try to read from app root instead of cwd
+            return send_file(open(res["filepath"], "rb"), as_attachment=True, download_name=res["original_name"])
 
 @bp.route("/status")
 @admin_required # TODO: Maybe we don't want this to be admin-only?

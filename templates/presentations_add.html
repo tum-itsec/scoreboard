@@ -90,8 +90,6 @@
 {% endif %}
 
 <script src="/static/admin.js"></script> 
-<script>
-	var choices = {{teams|tojson}};
-	document.querySelectorAll("#add-presentation div.autocomplete").forEach((elm) => {console.log(elm); autocomplete(elm, choices)});
-</script>
+<script id="autocomplete-teams" type="application/json">{{teams|tojson}}</script>
+<script src="/static/presentations_add.js"></script>
 {% endblock %}

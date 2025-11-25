@@ -29,7 +29,7 @@ def get_submission_queue():
     #                WHERE sb.submission_time is not null and t.autograded=1 and s.autograde_result IS NULL
     #            )""")
 
-    cur.execute("""SELECT s.id as id, s.original_name as original_name, *,
+    cur.execute("""SELECT s.id as id, s.original_name as original_name, t.flag_key as flag_key, u.id as user_id, t.task_short as task_short, *,
                 CASE WHEN tt.teamname IS NULL THEN 'Team ' || tt.team_id ELSE tt.teamname END as team,
                 IIF(u.displayname IS NOT NULL, u.displayname, u.vorname || ' ' || u.nachname) as name
                 FROM task_submissions s
@@ -60,11 +60,15 @@ def get_submission_queue():
 
 @bp.route("/")
 def autograde_list():
-    if not request.args.get("APIKEY") == current_app.config["SSHKEY_APIKEY"]:
+    if not request.args.get("APIKEY", "") == current_app.config["AUTOGRADE_APIKEY"]:
         abort(403)
     submission_data = []
     for r in get_submission_queue():
-        submission_data.append({"id": r['id'], "filename": r['original_name']})
+        reset_url = r['reset_url']
+        if reset_url:
+            verifier_code = compute_verifier(r, r['user_id'])
+            reset_url = reset_url.replace("{{CODE}}", verifier_code)
+        submission_data.append({"id": r['id'], "filename": r['original_name'], "reset_url": reset_url, "task_short": r["task_short"]})
     return jsonify(submission_data)
 
 @bp.route("/queue")
@@ -99,7 +103,7 @@ def autograde_show_queue():
 
 @bp.route("/<int:submission_id>", methods=["GET"])
 def grade(submission_id):
-    if not request.args.get("APIKEY") == current_app.config["SSHKEY_APIKEY"]:
+    if not request.args.get("APIKEY", "") == current_app.config["AUTOGRADE_APIKEY"]:
         abort(403)
     
     cur = get_db().cursor()
@@ -107,34 +111,35 @@ def grade(submission_id):
     r = cur.fetchone()
     if not r:
         abort(404)
-    return send_file(r["filepath"], as_attachment=True, download_name = r['original_name'])
+    # We manually open the file instead of passing the path to send_file
+    # because Flask / Werkzeug will try to read from app root instead of cwd
+    return send_file(open(r["filepath"], "rb"), as_attachment=True, download_name = r['original_name'])
 
-def autograde_output(db_submission, output):
+def autograde_output(db_submission, start_time, output, force_fail):
     # Get and decode flags from output
     flags = [check_flag(x) for x in find_flags(output)]
-    print("Found flags:", flags)
+    # print("Found flags:", flags)
 
     # Is there at least one flag?
     if not len(flags) >= 1:
         return AutogradeStatus.NO_FLAG
-        
+
     # All flags should be valid and match the task of the submission
     if any(f is None or db_submission['task_id'] != f['task_id'] for f in flags):
         return AutogradeStatus.AT_LEAST_ONE_WRONG_FLAG
 
     # All flags should be fresh
-    if any(f['ftime'] <= db_submission['submission_time']*1e6 for f in flags):
+    if any(f['ftime'] <= start_time*1e6 for f in flags):
         return AutogradeStatus.FLAG_NOT_FRESH
-    
-    return AutogradeStatus.OKAY
+
+    return AutogradeStatus.AT_LEAST_ONE_WRONG_FLAG if force_fail else AutogradeStatus.OKAY
 
 
 @bp.route("/<int:submission_id>", methods=["POST"])
 def grade_write(submission_id):
-    if not request.args.get("APIKEY") == current_app.config["SSHKEY_APIKEY"]:
+    if not request.args.get("APIKEY", "") == current_app.config["AUTOGRADE_APIKEY"]:
         abort(403)
 
-    print(request.form.get("output"))
     if (output := request.form.get("output")) is not None:
         # Fetch submission
         cur = get_db().cursor()
@@ -142,7 +147,11 @@ def grade_write(submission_id):
         db_submission = cur.fetchone()
         if not db_submission:
             abort(400) # The submission we want to update does not exist
-        result = autograde_output(db_submission, output)
+
+        start_time = float(request.form.get('start_time', db_submission['submission_time']))
+        # bool("False") == "True"!?
+        force_fail = request.form.get('force_fail', False) == "True"
+        result = autograde_output(db_submission, start_time, output, force_fail)
 
         cur.execute("UPDATE task_submissions SET autograde_output=?, autograde_result=? WHERE id=?", (output, result.value, submission_id))
         cur.execute("""UPDATE task_grading SET deleted_time=strftime('%s', 'now') WHERE task_id=? and team_id=? and deleted_time IS NULL""", (db_submission['task_id'], db_submission['team_id'],))

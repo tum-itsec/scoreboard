@@ -6,7 +6,7 @@
 
 <div>
 	{%if task["url"] %}
-	<b>URL:</b> <a href="{{task['url']}}">{{task["url"]}}</a> 
+	<b>URL:</b> <a href="{{task['url']}}">{{task["url"]}}</a>
 	{% endif %}
 	{%if task["filename"] %}
 	<h3>Downloads</h3>
@@ -17,7 +17,7 @@
 		{% if submission %}
 			You submitted: <a href="/tasks/{{task["task_id"]}}/upload">{{submission["original_name"]}} (uploaded at {{submission["submission_time"]}})</a>
 		{% elif not still_open %}
-			We haven't received a submission from you in time. 
+			We haven't received a submission from you in time.
 		{% endif %}
 		{% if still_open %}
 		<p>The following file types are accepted for this task: {{files_allowed}}.</p>
@@ -43,7 +43,7 @@
 
 	{% if submission and submission["autograde_result"] is not none %}
 		<div style="margin-top: 0.5em">Your submission has been graded automatically. Your exploits outputed the following during execution:</div>
-		<pre class="black">{{submission["autograde_output"]}}</pre>
+		<pre class="black" style="overflow: scroll;">{{submission["autograde_output"]}}</pre>
 	{% else %}
 		<p>Your submission will be graded automatically. You have not submitted anything so far or your submission is still in the execution queue.</p>
 	{% endif %}
@@ -71,4 +71,4 @@
 	{% endif %}
 </div>
 {% endblock %}
-	
+

@@ -49,12 +49,14 @@ int generate_key_path(char *buf, size_t size)
 {
     int written;
 
+    /* we have to use AT_EACCESS because exploiter user */
+    /* might not even be able to see that the flag key file exists */
     written = snprintf(buf, size, FLAGS_KEY_UID_FILE, geteuid());
     if (written < 0 || (size_t) written >= size) return -1;
-    if (0 == access(buf, F_OK)) return 0;
+    if (0 == faccessat(AT_FDCWD, buf, F_OK, AT_EACCESS)) return 0;
     written = snprintf(buf, size, FLAGS_KEY_FALLBACK_FILE);
     if (written < 0 || (size_t) written >= size) return -1;
-    if (0 == access(buf, F_OK)) return 0;
+    if (0 == faccessat(AT_FDCWD, buf, F_OK, AT_EACCESS)) return 0;
     DIE(); /* No valid file */
 }
 

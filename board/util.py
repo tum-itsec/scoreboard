@@ -9,6 +9,7 @@ import binascii
 import struct
 import enum
 from Crypto.Cipher import AES
+from Crypto.Cipher import Blowfish
 
 FLAG_BODY_REGEX = r"\{([0-9a-fA-F]{36})\}"
 
@@ -98,8 +99,11 @@ def get_db():
     return db
 
 def get_team_from_db():
+    return user_to_team(session['user-id'])
+
+def user_to_team(user_id):
     cur = get_db().cursor()
-    cur.execute("SELECT * FROM team_members tm LEFT JOIN teams t ON t.team_id = tm.team_id WHERE member_id = ? and t.deleted is null", (session["user-id"],))
+    cur.execute("SELECT * FROM team_members tm LEFT JOIN teams t ON t.team_id = tm.team_id WHERE member_id = ? and t.deleted is null", (user_id,))
     res = cur.fetchone()
     if res:
         return res["team_id"]
@@ -139,7 +143,27 @@ def set_teamidoffset(app):
                     cur.execute("DELETE FROM teams WHERE team_id = ?", [firstTeamnum - 1])
                 elif res["teamname"] != teamname:
                     print(f"Teamname offset can not be accouted for as a team with the ID {firstTeamnum - 1} already exists.")
-                
+
+def current_user_verifier(task):
+    return compute_verifier(task, session['user-id'])
+
+def compute_verifier(task, user_id):
+    team_id = user_to_team(user_id)
+    if team_id:
+        kind = 1
+        id = team_id
+    else:
+        kind = 2
+        id = user_id
+    return compute_verifier_internal(task["flag_key"], kind, id)
+
+def compute_verifier_internal(flag_key, kind, id):
+    derived_key = hashlib.sha512(b"verify" + flag_key).digest()[:16]
+    cipher = Blowfish.new(key=derived_key, mode=Blowfish.MODE_ECB)
+    verifier_code_plain = struct.pack("<BI", kind, id)
+    verifier_code_plain += b"\x00" * (8 - len(verifier_code_plain))
+    verifier_code = cipher.encrypt(verifier_code_plain).hex()
+    return verifier_code
 
 def create_team(team_members):
     cur = get_db().cursor()
@@ -164,10 +188,17 @@ def redirect_to_post_login_url():
     else:
         return redirect("/scoreboard")
 
+def is_logged_in():
+    if "user-id" not in session:
+        return False
+    if session.get("permasession", False):
+        return True
+    return session.get("logged-in-until", 0) > time.time()
+
 def login_required(f):
     @wraps(f)
     def login_required_wrapper(*args, **kws):
-        if "user-id" not in session:
+        if not is_logged_in():
             session["post-login-return-url"] = request.path
             return redirect("/")
         else:
@@ -177,7 +208,7 @@ def login_required(f):
 def admin_required(f):
     @wraps(f)
     def admin_required_wrapper(*args, **kws):
-        if "user-id" not in session or not is_admin():
+        if not is_logged_in() or not is_admin():
             session["post-login-return-url"] = request.path
             return redirect("/")
         else:
@@ -187,7 +218,7 @@ def admin_required(f):
 def tutor_required(f):
     @wraps(f)
     def tutor_required_wrapper(*args, **kws):
-        if "user-id" not in session or not is_tutor():
+        if not is_logged_in() or not is_tutor():
             session["post-login-return-url"] = request.path
             return redirect("/")
         else:
@@ -211,34 +242,42 @@ def find_flags(text):
         yield m.group(0)
 
 def check_flag(flag):
+    result, _ = check_flag_details(flag)
+    return result
+
+def check_flag_details(flag):
     m = re.match(current_app.config["FLAG_PREFIX"] + FLAG_BODY_REGEX, flag)
-    if m:
-        raw = bytes.fromhex(m.group(1))
-        data, checksum = raw[:-2], raw[-2:]
-        for start in range(0, len(data), 2):
-            checksum = bytes(a ^ b for a, b in zip(checksum, data[start:start + 2]))
-        task_id = struct.unpack(">H", checksum)[0]
-        key = get_flag_key(task_id)
-        if not key:
-            return None
-        key_task_id, cipher_key = struct.unpack(">H32s", key)
-        if key_task_id != task_id:
-            return None # ???
-        ci = AES.new(key=cipher_key, mode=AES.MODE_ECB)
-        dflag = ci.decrypt(data)
-        ftime, stored_task_id, pad = struct.unpack(">QH6s", dflag)
-        if pad != b"\0" * 6 or stored_task_id != task_id:
-            return None
+    if not m:
+        return None, f"Not a flag: doesn't match flag regex"
+    raw = bytes.fromhex(m.group(1))
+    data, checksum = raw[:-2], raw[-2:]
+    for start in range(0, len(data), 2):
+        checksum = bytes(a ^ b for a, b in zip(checksum, data[start:start + 2]))
+    task_id = struct.unpack(">H", checksum)[0]
+    key = get_flag_key(task_id)
+    if not key:
+        return None, f"taskid {task_id}, but no key found (probably flag commpletely broken / task doesn't exist)"
+    key_task_id, cipher_key = struct.unpack(">H32s", key)
+    if key_task_id != task_id:
+        return None, f"taskid {task_id}, but key's taskid doesn't match!? Database is inconsistent!"
+    ci = AES.new(key=cipher_key, mode=AES.MODE_ECB)
+    dflag = ci.decrypt(data)
+    ftime, stored_task_id, pad = struct.unpack(">QH6s", dflag)
+    if pad != b"\0" * 6 or stored_task_id != task_id:
+        return None, f"taskid {task_id}; decryption result nonsensical: ftime {ftime}, stored_taskid {stored_task_id}, pad {pad}"
 
-        cur = get_db().cursor()
-        cur.execute("SELECT task_short FROM tasks WHERE task_id=?", (task_id,))
-        r = cur.fetchone()
-        if not r:
-            return None
+    cur = get_db().cursor()
+    cur.execute("SELECT task_short FROM tasks WHERE task_id=?", (task_id,))
+    r = cur.fetchone()
+    if not r:
+        return None, "taskid {task_id}; key found and decryption sensible, but no task in db!? Database is inconsistent!"
+    task_short = r["task_short"]
 
-        if current_app.config["FLAG_VALID_START"]*1e6 < ftime <= current_app.config["FLAG_VALID_END"]*1e6:
-            return {"task_id": task_id, "task_short": r["task_short"], "ftime": ftime}
-    return None
+    if current_app.config["FLAG_VALID_START"]*1e6 < ftime <= current_app.config["FLAG_VALID_END"]*1e6:
+        return {"task_id": task_id, "task_short": task_short, "ftime": ftime}, "Valid flag according to all metrics"
+    t = time.localtime(ftime / 1e6)
+    tstr = time.strftime('%Y-%m-%d %H:%M:%S', t)
+    return None, f"taskid {task_id} / {task_short}; pad and taskid valid, but ftime nonsensical / out of bounds: {ftime} / {tstr}"
 
 def generate_flag(task_id, time, flag_key):
     key_task_id, cipher_key = struct.unpack(">H32s", flag_key)

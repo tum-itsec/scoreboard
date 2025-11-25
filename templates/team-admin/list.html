@@ -55,13 +55,11 @@
 	</table>
 	</div>
 
-<script src="static/sortable.js"></script>
+<script src="/static/sortable.js"></script>
 {% if is_admin() %}
-<script src="static/admin.js"></script> 
-<script>
-	var choices = {{users|tojson}};
-	document.querySelectorAll("#create-team div.autocomplete").forEach((elm) => {console.log(elm); autocomplete(elm, choices)});
-</script>
+<script src="/static/admin.js"></script> 
+<script id="autocomplete-users" type="application/json">{{users|tojson}}</script>
+<script src="/static/team-admin-list.js"></script>
 {% endif %}
 
 {% endblock %}

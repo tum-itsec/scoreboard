@@ -117,12 +117,28 @@ def check_maintenance():
     if app.config["MAINTENANCE"] and request.endpoint != "maintenance" and not request.path.startswith("/static/"):
         return redirect("/maintenance")
 
+@app.before_request
+def anti_csrf():
+    # These are the ones that according to RFC7231 mustn't modify state
+    if request.method in ["GET", "HEAD", "OPTIONS", "TRACE"]:
+        return
+    sec_fetch_site = request.headers.get("Sec-Fetch-Site", None)
+    if sec_fetch_site is None or sec_fetch_site == "same-origin":
+        return
+    abort(403)
+
 if not app.config.get("DISABLE_ACTIVITY_LOG"):
     @app.before_request
     def log_activity():
-        if "user-id" in session:
+        if is_logged_in():
             cur = get_db().cursor()
             cur.execute("UPDATE users SET last_active = strftime('%s','now') WHERE id = ?", [session['user-id']])
+
+@app.after_request
+def set_security_headers(response):
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Content-Security-Policy"] = "frame-ancestors 'none'; script-src 'self'; object-src 'none'; form-action 'self';"
+    return response
 
 @app.route("/maintenance")
 def maintenance():
@@ -132,7 +148,7 @@ def maintenance():
 
 @app.route("/")
 def index():
-    if "user-id" in session:
+    if is_logged_in():
         return redirect("/scoreboard")
     return render_template("login.html", welcome_text=app.config["WELCOME_TEXT"])
 
@@ -280,13 +296,13 @@ def flagcheck():
         if m := cur.fetchone():
             flash(f"Easteregg-Flag; Link: {m['link']}")
         else:
-            fdec = check_flag(flag)
+            fdec, fdetails = check_flag_details(flag)
             if fdec is not None:
                 t = time.localtime(fdec['ftime'] // 1e6)
                 tstr = time.strftime('%Y-%m-%d %H:%M:%S', t)
                 flash(f"Valide Flag für Aufgabe {fdec['task_short']}, erstellt am {tstr}", category="success")
             else:
-                flash("Keine valide Flag!")
+                flash(f"Keine valide Flag! Details: {fdetails}")
     return render_template("flagcheck.html")
 
 @app.route("/team/join", methods=["POST"])
@@ -505,34 +521,30 @@ def login():
 
     # Create user on demand
     cur = get_db().cursor()
-    cur.execute("SELECT * FROM users WHERE permanent_id LIKE ?", (session["user-permanent-id"],))
+    cur.execute("SELECT * FROM users WHERE permanent_id = ?", (session["user-permanent-id"],))
     if not cur.fetchone():
         cur.execute("INSERT INTO users (permanent_id, matrikel, vorname, nachname, uid, gender, role, email, displayname) VALUES (?,?,?,?,?,?,?,?,?)", (session["user-permanent-id"], session["user-matrikel"], session["user-vorname"], session["user-name"], uid, gender, 0, session['user-mail'], session["user-displayname"]))
     else:
         # In rare circumstances the first- and surname are changed in TUMOnline.
         # Maybe also the mail address and display name change, update the database accordingly
-        cur.execute("UPDATE users SET vorname=?, nachname=?, email=?, displayname=? WHERE permanent_id=? LIMIT 1", (session['user-vorname'], session['user-name'], session['user-mail'], session["user-displayname"], session["user-permanent-id"],))
-    cur.execute("SELECT id, role, vorname FROM users WHERE permanent_id LIKE ?", (session["user-permanent-id"],))
+        cur.execute("UPDATE users SET vorname=?, nachname=?, gender=?, email=?, displayname=? WHERE permanent_id=? LIMIT 1", (session['user-vorname'], session['user-name'], gender, session['user-mail'], session["user-displayname"], session["user-permanent-id"],))
 
+    cur.execute("SELECT id, role FROM users WHERE permanent_id = ?", (session["user-permanent-id"],))
     res = cur.fetchone()
     session["user-id"] = res["id"]
     session["user-role"] = res["role"]
 
-    # TODO: Hack. Some students/tutors have names in TUMOnline that they do not want to
-    # display in the scoreboard. 
-    # Use the cached value in the database instead of the Shibboleth values.
-    # We might want to use the DisplayName of Shibboleth instead long term.
-    session["user-vorname"] = res["vorname"]
-
     # Check if the user is on the list of allowed students (for seminars etc.)
-    if res["role"] != 1 and app.config["USER_ALLOWLIST_TABLE"] is not None:
+    if res["role"] not in TUTOR_ROLES and app.config["USER_ALLOWLIST_TABLE"] is not None:
         # Can't parametrize the allowlist table name, so concatenation it is...
         # This comes from the config so it shouldn't be injectable
         cur.execute(f"SELECT * FROM {app.config['USER_ALLOWLIST_TABLE']} WHERE matrikel=?", [session["user-matrikel"]])
         if not cur.fetchone():
             session.pop("user-id")
-            return render_template("login-denied.html")
+            return render_template("login-denied.html", contact_info=app.config["CONTACT_INFO"])
 
+    # do this last so that session becomes valid as late as possible, to guard against exceptions during login process
+    session["logged-in-until"] = time.time() + app.config["MAX_SESSION_SECONDS"]
     return redirect_to_post_login_url()
 
 
@@ -554,6 +566,7 @@ def alternative_login():
                 session["user-id"] = res["id"]
                 session["user-role"] = res["role"]
                 session["user-displayname"] = res["displayname"]
+                session["logged-in-until"] = time.time() + app.config["MAX_SESSION_SECONDS"]
                 return redirect_to_post_login_url()
             else:
                 return redirect("/alternative-login")
@@ -585,6 +598,7 @@ def impersonate(user_id):
     session["user-matrikel"] = res["matrikel"]
     session["user-vorname"] = res["vorname"]
     session["user-name"] = res["nachname"]
+    session["user-displayname"] = res["displayname"]
 
     return redirect("/scoreboard")
 

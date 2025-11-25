@@ -4,13 +4,19 @@ import datetime
 class Config:
     # Display settings
     BOARD_TITLE = "Scoreboard - TODO which course?"
+    # HTML blob; inserted without escaping
     WELCOME_TEXT = "Welcome to the scoreboard for the lecture <b>TODO</b> in the winter term TODO!"
+    # HTML blob; inserted without escaping
+    CONTACT_INFO = "John Doe (<a href=\"mailto:john.doe@example.org\">john.doe@example.org</a>)"
     MAINTENANCE = False
     SHOW_NAMES_TO_ALL = False
+    # TIME_FORMAT configures both how times are entered here in the config and how times are displayed to tutors.
+    TIME_FORMAT = "%Y-%m-%d %H:%M"
 
     # Security settings
     SESSION_COOKIE_SAMESITE = "Lax"
     SECRET_KEY = open("app-secret.key", "rb").read()
+    MAX_SESSION_SECONDS = 60 * 60 * 24
 
     # Database settings
     DATABASE = "scoreboard.db"
@@ -21,33 +27,43 @@ class Config:
     TASK_STATUS_UP_TIMEOUT = 20 * 60 # Seconds after which a reported "Up" status expires
 
     # Flag settings
-    FLAG_VALID_START = time.mktime(time.strptime("02 Nov 2020", "%d %b %Y"))
-    FLAG_VALID_END = time.mktime(time.strptime("02 Nov 2020", "%d %b %Y"))
+    FLAG_VALID_START = time.mktime(time.strptime("1990-12-31 00:00", TIME_FORMAT))
+    FLAG_VALID_END = time.mktime(time.strptime("1990-12-31 23:59", TIME_FORMAT))
     FLAG_PREFIX = "flag"
 
     # Submission settings
     SUBMISSION_GRACE_PERIOD = 15*60
+    # change to static secret string to enable apikey-based access to autograding endpoints
+    AUTOGRADE_APIKEY = None
 
     # Team creation
     JOIN_KEY = open("join.key", "rb").read()
     JOIN_MINUTES_VALID = 60
     START_TEAMNUMBER = 1 # Team-id that the first team should have
-
     SINGLETEAMS_ALLOWED = True
-    PRESENTATIONS_PER_USER = True
 
     # Presentation settings
     REQ_PRESENTATIONS = 1
+    PRESENTATIONS_PER_USER = True
 
     # SSH setup
-    SSHKEY_APIKEY = "0123456789abcdef"
     SSHKEY_CMD = "ssh {user}@example.invalid"
+    # change to static secret string to enable apikey-based access to sshkey syncing endpoints
+    SSHKEY_APIKEY = None
+    # If True: Tutors get a "tut" SSH account (regardless of team state)
+    # If False: Tutors get SSH accounts with the same rules as students
+    SSH_TUTOR_ACCOUNTS = True
+    # If True: Students get a "stud" SSH account if they don't yet have a team
+    # If False: Students only get a SSH account once they have formed a team
+    # In either case, students in a team get a "team" SSH account
+    SSH_STUDENT_ACCOUNTS = True
+    # Inserted between "tut"/"stud"/"team" and the account number.
+    # Example: "-" results in account names like "tut-5", "stud-321", "team-123".
+    SSH_ACCOUNT_NAME_SEPARATOR = "-"
 
     # Timesheet tracking.
-    # TIME_FORMAT configures both how times are entered here in the config and how times are displayed to tutors.
-    TIME_FORMAT = "%Y-%m-%d %H:%M"
-    SEMESTER_START = datetime.datetime.strptime("2020-10-14 00:00", TIME_FORMAT)
-    SEMESTER_END = datetime.datetime.strptime("2021-02-09 23:59", TIME_FORMAT)
+    SEMESTER_START = datetime.datetime.strptime("1990-10-14 00:00", TIME_FORMAT)
+    SEMESTER_END = datetime.datetime.strptime("1990-02-09 23:59", TIME_FORMAT)
     HOURS_PER_WEEK = 7
 
     # Send emails on exceptions
@@ -59,6 +75,7 @@ class Config:
     EMAIL_BUGS_SUBJECT = "[scoreboard] Internal Server Error"
 
     # Attendance tracking: must be a bytestring of length 8
+    # TODO replace with secret key
     ATTENDANCE_KEY = b"01234567"
 
     # Additional (maybe internal) plugins.

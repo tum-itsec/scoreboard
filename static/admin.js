@@ -2,38 +2,40 @@ function autocomplete(div, arr) {
   /*the autocomplete function takes two arguments,
   the text field element and an array of possible autocompleted values:*/
   var currentFocus;
-  var inp = div.querySelector("input[name=value]");
-  var inp2 = div.querySelector("input[name=key]");
+  const inp = div.querySelector("input[name=value]");
+  const inp2 = div.querySelector("input[name=key]");
   /*execute a function when someone writes in the text field:*/
   inp.addEventListener("input", function(e) {
-      var a, b, i, val = this.value;
+      const val = this.value;
       /*close any already open lists of autocompleted values*/
       closeAllLists();
       if (!val) { return false;}
       currentFocus = -1;
       /*create a DIV element that will contain the items (values):*/
-      a = document.createElement("DIV");
+      const a = document.createElement("div");
       a.setAttribute("id", this.id + "autocomplete-list");
       a.setAttribute("class", "autocomplete-items");
       /*append the DIV element as a child of the autocomplete container:*/
       this.parentNode.appendChild(a);
       /*for each item in the array...*/
       for (i = 0; i < arr.length; i++) {
+        const entry = arr[i];
+        const eKey = entry["key"];
+        const eVal = entry["value"];
         /*check if the item starts with the same letters as the text field value:*/
         if (arr[i]['value'].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
           /*create a DIV element for each matching element:*/
-          b = document.createElement("DIV");
+          const b = document.createElement("div");
           /*make the matching letters bold:*/
-          b.innerHTML = "<strong>" + arr[i]["value"].substr(0, val.length) + "</strong>";
-          b.innerHTML += arr[i]["value"].substr(val.length);
-          /*insert a input field that will hold the current array item's value:*/
-          b.innerHTML += "<input type='hidden' value='" + arr[i]["value"] + "'>";
-          b.innerHTML += "<input type='hidden' value='" + arr[i]["key"] + "'>";
+          const strong = document.createElement("strong");
+          strong.innerText = eVal.substr(0, val.length);
+          b.appendChild(strong);
+          b.appendChild(document.createTextNode(eVal.substr(val.length)));
           /*execute a function when someone clicks on the item value (DIV element):*/
               b.addEventListener("click", function(e) {
               /*insert the value for the autocomplete text field:*/
-              inp.value = this.getElementsByTagName("input")[0].value;
-			  inp2.value = this.getElementsByTagName("input")[1].value;
+              inp.value = eVal;
+              inp2.value = eKey;
               /*close the list of autocompleted values,
               (or any other open lists of autocompleted values:*/
               closeAllLists();
