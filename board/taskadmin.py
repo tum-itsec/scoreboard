@@ -11,17 +11,18 @@ import time
 import markdown
 import subprocess
 
+markdown_exts = ["markdown.extensions.tables", "markdown.extensions.fenced_code", "markdown.extensions.footnotes", "markdown.extensions.codehilite"]
+try:
+    import l2m4m
+except ModuleNotFoundError as _:
+    pass
+else:
+    markdown_exts.append(l2m4m.LaTeX2MathMLExtension())
+
 bp = Blueprint("taskadmin", __name__, url_prefix="/taskadmin")
 
-try:
-    import markdown.extensions.latex
-except ModuleNotFoundError:
-    HAS_LATEX = False
-else:
-    HAS_LATEX = True
-
 def render_markdown(md):
-    return markdown.markdown(md, extensions=["markdown.extensions.tables", "markdown.extensions.fenced_code", "markdown.extensions.footnotes", "markdown.extensions.codehilite"] + (["markdown.extensions.latex"] if HAS_LATEX else []))
+    return markdown.markdown(md, extensions=markdown_exts)
 
 TIMEFORMAT = "%Y-%m-%dT%H:%M"
 
