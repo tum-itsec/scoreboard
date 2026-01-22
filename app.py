@@ -182,7 +182,7 @@ def scoreboard():
     #print([(k,sum(v),v) for k,v in sorted_state])
 
     teams = None
-    cur.execute("""SELECTs
+    cur.execute("""SELECT
     t.team_id,
     CASE WHEN tt.teamname IS NULL THEN 'Team ' || tt.team_id ELSE tt.teamname END as teamname,
     GROUP_CONCAT(u.vorname || ' ' || u.nachname, ', ') as member
