@@ -34,7 +34,7 @@
 	<h3>Grading</h3>
 
 	{% if grading %}
-		<p class="grade {% if grading['points']/task['max_points'] > 0.999999 %} positive{% elif grading['points']/task['max_points'] > 0.5%} partial-success{% else %} negative{%endif%}" style="padding: 1rem;">You scored <b>{{grading['points']}}</b> of <b>{{task['max_points']}}</b> points on this task. {% if submission%}(Submission from {{submission["submission_time"]}}){%endif%}</p>
+		<p class="grade {% if task['max_points'] > 0 and grading['points']/task['max_points'] > 0.999999 %} positive{% elif task['max_points'] and grading['points']/task['max_points'] > 0.5%} partial-success{% else %} negative{%endif%}" style="padding: 1rem;">You scored <b>{{grading['points']}}</b> of <b>{{task['max_points']}}</b> points on this task. {% if submission%}(Submission from {{submission["submission_time"]}}){%endif%}</p>
 	{% elif submission %}
 		<p class="grade neutral" style="padding: 1rem;">Your submission from {{submission["submission_time"]}} hasn't been graded yet.</p>
 	{% endif %}
