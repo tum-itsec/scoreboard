@@ -118,7 +118,10 @@ def task_detail(task_id):
     if task["markdown_rendered"]:
         task["markdown_rendered"] = task["markdown_rendered"].replace("{{CODE}}", verifier_code)
 
-    cur.execute("""SELECT *, strftime('%d.%m.%y %h:%m', submission_time, 'unixepoch','localtime') as submission_time FROM task_submissions s
+    cur.execute("""SELECT id, task_id, s.team_id, user_id,
+        strftime('%d.%m.%Y %H:%M', submission_time, 'unixepoch','localtime') as submission_time,
+        filepath, original_name, autograde_output, autograde_result, member_id 
+        FROM task_submissions s
         LEFT JOIN team_members m ON m.team_id = s.team_id
         WHERE task_id = ?1 and m.member_id=?2
         ORDER BY s.submission_time DESC

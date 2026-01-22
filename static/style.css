@@ -311,10 +311,10 @@ input {
   gap: 1em;
   align-items: flex-start;
 }
-.comment-form > * { margin: 0; width: min(1024px, 97.5%); box-sizing: border-box; }
+.comment-form > * { margin: 0; width: 100%; /* width: min(1024px, 97.5%);*/ box-sizing: border-box; }
 
 .comments {
-  width: min(1024px, 97.5%); 
+  /*width: min(1024px, 97.5%); */
   display: flex;
   flex-direction: column;
   gap: 0.5em;
@@ -331,7 +331,7 @@ input {
   background-color: #e6eff9;
 }
 .comment.grade {
-  background-color: #ffe6e6;
+  /* background-color: #f1f1f1; */
 }
 .comment .author {
 	display: block;
@@ -355,6 +355,22 @@ input {
   font-size: x-small;
   margin-top: 4px;
   display: block;
+}
+
+.grade.negative {
+  background-color: #ffe6e6;
+}
+
+.grade.partial-success {
+  background-color: #ffffe6;
+}
+
+.grade.positive {
+  background-color: #e6ffe9;
+}
+
+.grade.neutral {
+  background-color: #f1f1f1;
 }
 
 #navtoggle {
