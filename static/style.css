@@ -133,7 +133,7 @@ main {
 	min-width: 30px;
 }
 
-#scoreboard thead th:nth-child(2) {
+#scoreboard thead th:nth-child(3) {
 	min-width: 250px;
 }
 
