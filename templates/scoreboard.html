@@ -61,7 +61,7 @@
 	{% for t in tasks %}
 	{% if r[1][t['task_id']] == 1 %}
 	<td style="font-size: 1.3em; color: red" title="{{r[1][t['task_id']]}}. Abgabe"><i class="fas fa-check"></i></td>
-	{% elif r[1][t['task_id']] != 9999 %}
+	{% elif r[1][t['task_id']] != 0 %}
 	<td style="font-size: 1.3em" title="{{r[1][t['task_id']]}}. Abgabe"><i class="fas fa-check"></i></td>
 	{% else%}
 	<td></td>
