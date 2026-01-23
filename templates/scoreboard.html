@@ -39,6 +39,7 @@
 		<thead>
         <tr>
             <th>#</th>
+            <th>Score</th>
             <th>Team</th>
         {% for t in tasks %}
             <th>#{{t['task_short']}}</th>
@@ -48,6 +49,7 @@
 {% for r in scoreboard %}
 <tr>
 	<td>{{loop.index}}</td>
+    <td>{{r[2]}}</td>
 	<td>
 	{% if show_names %}
 	<a href="/teaminfo/{{r[0]}}">{{ teams[r[0]]["teamname"] }}</a>

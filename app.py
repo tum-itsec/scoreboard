@@ -166,16 +166,19 @@ def scoreboard():
     cur.execute("SELECT s.task_id, s.team_id FROM flag_submissions s LEFT JOIN teams t ON s.team_id = t.team_id WHERE t.deleted IS NULL ORDER BY flag_time")
 
     task_ctr = {k["task_id"]: 1 for k in tasks}
-    state = defaultdict(lambda: {k["task_id"]: 9999 for k in tasks})
+    state = defaultdict(lambda: {k["task_id"]: 0 for k in tasks})
 
     for r in cur.fetchall():
         cur_state = state[r["team_id"]]
-        if cur_state[r["task_id"]] == 9999:
+        if cur_state[r["task_id"]] == 0:
             cur_state[r["task_id"]] = task_ctr[r["task_id"]]
             task_ctr[r["task_id"]] += 1
 
     # Sort
-    sorted_state = sorted(state.items(), key=lambda x: sum(x[1].values()))
+    sorted_state = sorted(
+        [(k, v, sum(v.values()), sum(1 for x in v.values() if x > 0)) for k, v in state.items()],
+        key=lambda x: (-x[3], x[2])
+    )   
     #print([(k,sum(v),v) for k,v in sorted_state])
 
     teams = None
