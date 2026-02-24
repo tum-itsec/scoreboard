@@ -661,13 +661,17 @@ def get_newest_submissions(task, due):
 @cli.command()
 @click.argument("filename")
 def export_grading(filename):
+    if current_app.config["PRESENTATIONS_PER_USER"]:
+        pres_per_user_query = "SELECT team_id as user_id, SUM(successful) as presentations FROM task_presentations GROUP BY team_id"
+    else:
+        pres_per_user_query = "SELECT m.member_id as user_id, SUM(successful) as presentations FROM task_presentations p LEFT JOIN team_members m ON m.team_id=p.team_id GROUP BY m.member_id"
     cur = get_db().cursor()
-    cur.execute("""SELECT u.vorname, u.nachname, u.matrikel,SUM(g.points) as points
+    cur.execute(f"""SELECT u.vorname, u.nachname, u.matrikel,SUM(g.points) as points
             FROM task_grading g
             LEFT JOIN team_members m ON m.team_id = g.team_id
             LEFT JOIN users u ON m.member_id = u.id
-            LEFT JOIN (SELECT m.member_id as user_id, SUM(successful) as presentations FROM task_presentations p LEFT JOIN team_members m ON m.team_id=p.team_id GROUP BY m.member_id) p ON p.user_id = u.id
-            WHERE g.deleted_time IS NULL AND u.matrikel IS NOT NULL AND u.matrikel != "(null)" AND p.presentations >=2
+            LEFT JOIN ({pres_per_user_query}) p ON p.user_id = u.id
+            WHERE g.deleted_time IS NULL AND u.matrikel IS NOT NULL AND u.matrikel != "(null)" AND p.presentations >=1
             GROUP BY u.id""")
     print("matrikel;problem;subproblem;credit")
     for u in cur.fetchall():
