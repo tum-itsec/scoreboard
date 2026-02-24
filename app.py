@@ -659,8 +659,8 @@ def get_newest_submissions(task, due):
         print(r["filepath"])
 
 @cli.command()
-@click.argument("filename")
-def export_grading(filename):
+#@click.argument("filename")
+def export_grading():
     if current_app.config["PRESENTATIONS_PER_USER"]:
         pres_per_user_query = "SELECT team_id as user_id, SUM(successful) as presentations FROM task_presentations GROUP BY team_id"
     else:
