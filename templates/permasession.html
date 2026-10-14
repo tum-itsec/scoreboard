@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if state == "nonperm" %}
+Your session is currently not permanent.
+{% elif state == "nonperm-freshly" %}
+Your session is no longer permanent.
+{% elif state == "perm" %}
+Your session is already permanent and will expire in approx. {{lifetime.days}} days.
+{% elif state == "perm-freshly" %}
+Your session is now permanent and will expire in approx. {{lifetime.days}} days.
+{% else %}
+unknown state {{state}}
+{% endif %}
+
+<p>
+
+<form method="post" action="/permasession">
+	<input type="submit" name="makeperm" value="Make this session permanent" class="tum-btn">
+	<input type="submit" name="makenonperm" value="Make this session non-permanent" class="tum-btn">
+</form>
+{% endblock %}
+

@@ -614,6 +614,24 @@ def presenter_view():
     session["user-matrikel"] = "hidden"
     return redirect("/scoreboard")
 
+@app.get("/permasession")
+@tutor_required
+def permasession_get():
+    return render_template("permasession.html", state="perm" if session.permanent else "nonperm", lifetime=app.permanent_session_lifetime)
+
+@app.post("/permasession")
+@tutor_required
+def permasession_post():
+    if "makeperm" in request.form:
+        perm = True
+    elif "makenonperm" in request.form:
+        perm = False
+    else:
+        return "Neither makeperm nor makenonperm", 400
+    session.permanent = perm
+    session["permasession"] = perm
+    return render_template("permasession.html", state="perm-freshly" if perm else "nonperm-freshly", lifetime=app.permanent_session_lifetime)
+
 @cli.command()
 def create_db():
     init_db()
