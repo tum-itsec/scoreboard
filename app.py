@@ -218,6 +218,8 @@ def scoreboard():
 @tutor_required
 def lookup():
     q = request.args.get("q")
+    if q is None:
+        return redirect("/404")
     # Clear name
     q = re.sub(r'\W*\[[^\]]*\]', "", q)
     cur = get_db().cursor()
