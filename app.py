@@ -234,6 +234,8 @@ def lookup():
 @login_required
 def logout():
     session.pop("user-id")
+    session.pop("permasession")
+    session.permanent = False
     return redirect("/")
 
 @app.route("/flag", methods=["POST"])
