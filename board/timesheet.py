@@ -116,6 +116,7 @@ def admin_user_api(id_user):
     return list_records_for_user(id_user)
 
 @bp.route("/admin/<int:id_user>/api/<int:record_id>", methods=["PUT"])
+@admin_required
 def approve_record(id_user, record_id):
     cur = get_db().cursor()
     d = json.loads(request.data)
