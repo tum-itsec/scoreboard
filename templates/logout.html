@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+
+<form method="post" action="/logout">
+<input type="submit" class="tum-btn" value="Log out">
+</form>
+
+<p>
+
+<form method="post" action="/logout">
+<input type="hidden" name="everywhere" value="1">
+<input type="submit" class="tum-btn" value="Log out every session">
+</form>
+
+
+{% endblock %}

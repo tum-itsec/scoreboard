@@ -230,11 +230,17 @@ def lookup():
     return redirect(f"/teaminfo/{row[0]}")
 
 
-@app.route("/logout")
+@app.get("/logout")
+def logout_template():
+    return render_template("logout.html")
+
+@app.post("/logout")
 @login_required
 def logout():
+    if request.form.get("everywhere", False):
+        get_db().execute("update users set session_generation=session_generation+1 where id=?", [session['user-id']])
     session.pop("user-id")
-    session.pop("permasession")
+    session.pop("permasession", None)
     session.permanent = False
     return redirect("/")
 
@@ -515,6 +521,9 @@ def comment_thread(team_id, task_id):
 
 @app.route("/shib-login")
 def login():
+    if "X-Remoteuser" not in request.headers:
+        flash("TUM-ID login broken; use alternative login instead")
+        return redirect("/alternative-login")
     """This URL is protected by the apache server. Just set a cookie so that
     we can recognize the user"""
     session["user-permanent-id"] = request.headers.get("X-Remoteuser")
@@ -536,10 +545,11 @@ def login():
         # Maybe also the mail address and display name change, update the database accordingly
         cur.execute("UPDATE users SET vorname=?, nachname=?, gender=?, email=?, displayname=? WHERE permanent_id=? LIMIT 1", (session['user-vorname'], session['user-name'], gender, session['user-mail'], session["user-displayname"], session["user-permanent-id"],))
 
-    cur.execute("SELECT id, role FROM users WHERE permanent_id = ?", (session["user-permanent-id"],))
+    cur.execute("SELECT id, role, session_generation FROM users WHERE permanent_id = ?", (session["user-permanent-id"],))
     res = cur.fetchone()
     session["user-id"] = res["id"]
     session["user-role"] = res["role"]
+    session["session-generation"] = res["session_generation"]
 
     # Check if the user is on the list of allowed students (for seminars etc.)
     if res["role"] not in TUTOR_ROLES and app.config["USER_ALLOWLIST_TABLE"] is not None:
@@ -573,6 +583,7 @@ def alternative_login():
                 session["user-id"] = res["id"]
                 session["user-role"] = res["role"]
                 session["user-displayname"] = res["displayname"]
+                session["session-generation"] = res["session_generation"]
                 session["logged-in-until"] = time.time() + app.config["MAX_SESSION_SECONDS"]
                 return redirect_to_post_login_url()
             else:
@@ -606,6 +617,7 @@ def impersonate(user_id):
     session["user-vorname"] = res["vorname"]
     session["user-name"] = res["nachname"]
     session["user-displayname"] = res["displayname"]
+    session["session-generation"] = res["session_generation"]
 
     return redirect("/scoreboard")
 

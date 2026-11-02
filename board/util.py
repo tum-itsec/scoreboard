@@ -191,6 +191,9 @@ def redirect_to_post_login_url():
 def is_logged_in():
     if "user-id" not in session:
         return False
+    cur = get_db().execute("SELECT 1 FROM users WHERE id=? AND session_generation=?", [session["user-id"], session.get("session-generation", 0)])
+    if not cur.fetchone():
+        return False
     if session.get("permasession", False):
         return True
     return session.get("logged-in-until", 0) > time.time()
@@ -301,14 +304,15 @@ def init_db():
     cur.close()
 
     to_run = {}
-    for file in os.listdir("db"):
+    dbdir = os.path.join(os.path.dirname(__file__), "../db")
+    for file in os.listdir(dbdir):
         match = re.match(r"(\d+)\.sql", file)
         if not match:
             continue
         target_version = int(match.group(1))
         if version >= target_version:
             continue
-        with open(f"db/{file}") as f:
+        with open(os.path.join(dbdir, file)) as f:
             to_run[target_version] = f.read()
 
     if not to_run:

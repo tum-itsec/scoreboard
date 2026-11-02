@@ -16,6 +16,14 @@
 			<div style="text-align:left; margin: 20px 0px;">
 				<h2>Alternativer Login</h2>
 			</div>
+			{# We need to flash messages here in case we got redirected from /shib-login #}
+			{% with messages = get_flashed_messages(with_categories=true) %}
+			{% if messages %}
+				{% for c,m in messages %}
+				<div class="alert-{{c}}">{{m}}</div>
+				{% endfor %}
+			{% endif%}
+			{% endwith %}
 
 			<form class="login-form" method="post" action="/alternative-login">
 				<input type="text" id="email" name="email" placeholder="E-Mail">

@@ -1,6 +1,14 @@
-Flask==2.3.3
+flask
 gunicorn
+gevent
 pycryptodome
 click
 markdown
 L2M4M
+
+# required by gevent somehow
+packaging
+
+# optional dependency; only for displaying tutorial attendance code QR codes.
+# Everything, including code-based attendance tracking, will work without the qrcode library.
+qrcode

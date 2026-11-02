@@ -18,7 +18,11 @@ def materialien():
         final_path = os.path.join("materialien", f.filename)
         f.save(final_path)
 
-    files = [x for x in os.listdir("materialien/") if not x.startswith(".")]
+    if os.path.exists("materialien"):
+        files = [x for x in os.listdir("materialien") if not x.startswith(".")]
+    else:
+        print("No materialien folder found!")
+        files = []
     files = sorted(files)
     return render_template("materialien.html", files=files)
 
