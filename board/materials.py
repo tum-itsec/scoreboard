@@ -15,8 +15,12 @@ def materialien():
         if not is_admin():
             return redirect("/materialien")
         f = request.files["fileupload"]
+        if not os.path.exists("materialien"):
+            os.mkdir("materialien")
         final_path = os.path.join("materialien", f.filename)
         f.save(final_path)
+        # redirect to avoid browser refresh resending POST request
+        return redirect("/materialien")
 
     if os.path.exists("materialien"):
         files = [x for x in os.listdir("materialien") if not x.startswith(".")]
@@ -30,6 +34,8 @@ def materialien():
 @login_required
 def materialien_dl(filename):
     if not filename.startswith("."):
-        return send_from_directory("materialien", filename, as_attachment=True)
+        # realpath because flask interprets this as relative to root directory,
+        # but we want it relative to current working directory
+        return send_from_directory(os.path.realpath("materialien"), filename, as_attachment=True)
     else:
         abort(404)

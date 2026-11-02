@@ -304,7 +304,7 @@ def init_db():
     cur.close()
 
     to_run = {}
-    dbdir = os.path.join(os.path.dirname(__file__), "../db")
+    dbdir = os.path.join(current_app.root_path, "db")
     for file in os.listdir(dbdir):
         match = re.match(r"(\d+)\.sql", file)
         if not match:
@@ -317,7 +317,7 @@ def init_db():
 
     if not to_run:
         # Nothing to do
-        print(f"Nothing to do, database (version {version}) is up to date")
+        print(f"Migration: Nothing to do, database (version {version}) is up to date")
         return
 
     new_version = max(to_run)

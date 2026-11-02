@@ -67,6 +67,8 @@ def insert_or_update_task(task_id=None):
     if task_id:
         params["task_id"] = task_id
 
+    if not os.path.exists("tasks"):
+        os.mkdir("tasks")
     final_path = os.path.join("tasks", request.form["task_short"])
 
     if "fileupload" in request.files and request.files["fileupload"].filename:
@@ -131,7 +133,9 @@ def task_key(task_id):
 @admin_required
 def task_dl(path):
     print(path)
-    return send_from_directory("tasks", path, as_attachment=True)
+    # realpath because flask interprets this as relative to root directory,
+    # but we want it relative to current working directory
+    return send_from_directory(os.path.realpath("tasks"), path, as_attachment=True)
 
 @bp.route("/create", methods=["GET", "POST"])
 @admin_required
@@ -235,7 +239,6 @@ def download_submissions():
                 except FileNotFoundError:
                     print(f["filepath"], "not found")
         return send_file(tmpzip.name, as_attachment=True, download_name="submissions.zip")
-        #return send_from_directory(directory="submissions", filename=filename)
 
 @bp.route("/delete", methods=["POST"])
 @admin_required

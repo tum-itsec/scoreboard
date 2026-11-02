@@ -185,8 +185,10 @@ def task_download(task_id):
     if r["from_date"] > time.time() and not is_tutor():
         abort(404)
     cur.execute("INSERT INTO tasks_download_log VALUES (?, ?, datetime('now', 'localtime'))", [session["user-id"],task_id])
+    # realpath because flask interprets this as relative to root directory,
+    # but we want it relative to current working directory.
     # TODO insert team code. Hard if we don't know if this is .zip or .tar or .tar.gz or .py or...
-    return send_from_directory("tasks", path=r["task_short"], as_attachment=True, download_name=r["filename"])
+    return send_from_directory(os.path.realpath("tasks"), path=r["task_short"], as_attachment=True, download_name=r["filename"])
 
 @bp.route("/<int:task_id>/upload", methods=["GET", "POST"])
 @login_required
@@ -218,6 +220,8 @@ def task_upload(task_id):
             return redirect(f"/tasks/{task_id}")
 
         filename = "task-{}-team{}-{}.{}".format(r["task_short"], team_id, datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S"), ext)
+        if not os.path.exists("submissions"):
+            os.mkdir("submissions")
         final_path = os.path.join("submissions", filename)
         f.save(final_path)
         f.close()
@@ -249,9 +253,9 @@ def task_upload(task_id):
         if not res:
             abort(404)
         else:
-            # We manually open the file instead of passing the path to send_file
-            # because Flask / Werkzeug will try to read from app root instead of cwd
-            return send_file(open(res["filepath"], "rb"), as_attachment=True, download_name=res["original_name"])
+            # realpath because flask interprets this as relative to root directory,
+            # but we want it relative to current working directory.
+            return send_file(os.path.realpath(res["filepath"]), as_attachment=True, download_name=res["original_name"])
 
 @bp.route("/status")
 @admin_required # TODO: Maybe we don't want this to be admin-only?

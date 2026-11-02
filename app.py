@@ -12,7 +12,7 @@ import sys
 import time
 
 import click
-from flask import Flask, render_template, session, redirect, url_for, request, g, flash, send_from_directory, abort, send_file, request
+from flask import Flask, render_template, session, redirect, url_for, request, g, flash, abort, request
 
 from board.util import *
 from board import teaminfo, materials, gradeupload, taskadmin, sshkeys, tasks, users, autograde, presentations, tutorials, eastereggs, booking, timesheet

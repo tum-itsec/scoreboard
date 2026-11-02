@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, send_from_directory, abort, request, jsonify, current_app
+from flask import Blueprint, render_template, abort, request, jsonify, current_app
 import re
 import os
 from collections import defaultdict

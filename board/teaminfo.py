@@ -1,5 +1,6 @@
 from flask import Blueprint, flash, redirect, render_template, request, session, send_file
 from .util import *
+import os
 
 bp = Blueprint("teaminfo", __name__, url_prefix="/teaminfo")
 
@@ -37,9 +38,9 @@ def submission_dl(submission):
     cur = get_db().cursor()
     cur.execute("SELECT * FROM task_submissions s WHERE id= ?", (submission,))
     submission = cur.fetchone()
-    # We manually open the file instead of passing the path to send_file
-    # because Flask / Werkzeug will try to read from app root instead of cwd
-    return send_file(open(submission['filepath'], "rb"), as_attachment=True, download_name=submission['original_name'])
+    # realpath because flask interprets this as relative to root directory,
+    # but we want it relative to current working directory
+    return send_file(os.path.realpath(submission['filepath']), as_attachment=True, download_name=submission['original_name'])
 
 @bp.route("/show/<int:submission>")
 @tutor_required

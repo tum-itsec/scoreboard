@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, send_from_directory, abort, request, send_file, jsonify
+from flask import Blueprint, render_template, abort, request, send_file, jsonify
 import flask.json
 import os
 import enum
@@ -111,9 +111,9 @@ def grade(submission_id):
     r = cur.fetchone()
     if not r:
         abort(404)
-    # We manually open the file instead of passing the path to send_file
-    # because Flask / Werkzeug will try to read from app root instead of cwd
-    return send_file(open(r["filepath"], "rb"), as_attachment=True, download_name = r['original_name'])
+    # realpath because flask interprets this as relative to root directory,
+    # but we want it relative to current working directory
+    return send_file(os.path.realpath(r["filepath"]), as_attachment=True, download_name = r['original_name'])
 
 def autograde_output(db_submission, start_time, output, force_fail):
     # Get and decode flags from output
