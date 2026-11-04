@@ -253,8 +253,10 @@ def flag():
         # Updated accessed counter
         cur.execute("UPDATE easteregg_flags SET counter=counter+1 WHERE easteregg_id=?", (m['easteregg_id'],))
 
-        # Redirect user to target
-        return redirect(m['link'])
+        # Redirect user to target via redirect page
+        # Direct redirect does not work on all browsers
+        # This is due to the "Content-Security-Policy" header value "form-action: self"
+        return render_template("easteregg_redirect.html", easteregg_url=m['link'])
 
     fdec = check_flag(flag)
     if fdec is not None:
